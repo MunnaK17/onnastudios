@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../core/theme/app_spacing.dart';
+import '../../shared/widgets/layout/app_scaffold.dart';
+import 'placeholder_content.dart';
 
 class FoundationPlaceholderScreen extends StatelessWidget {
   const FoundationPlaceholderScreen({
@@ -14,32 +15,8 @@ class FoundationPlaceholderScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
-    return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.screenPadding),
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: textTheme.headlineMedium,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Text(
-                  subtitle,
-                  textAlign: TextAlign.center,
-                  style: textTheme.bodyMedium,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+    return AppScaffold(
+      body: PlaceholderContent(title: title, subtitle: subtitle),
     );
   }
 }

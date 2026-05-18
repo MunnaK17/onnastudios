@@ -1,18 +1,28 @@
 import 'package:go_router/go_router.dart';
 
+import '../../presentation/navigation/main_app_shell.dart';
 import '../../presentation/screens/foundation_placeholder_screen.dart';
+import '../../presentation/screens/placeholder_content.dart';
 import 'app_route_names.dart';
 import 'app_routes.dart';
 
 final appRouter = GoRouter(
-  initialLocation: AppRoutes.onboarding,
+  initialLocation: AppRoutes.splash,
   routes: [
+    GoRoute(
+      path: AppRoutes.splash,
+      name: AppRouteNames.splash,
+      builder: (context, state) => const FoundationPlaceholderScreen(
+        title: 'Onna Studios',
+        subtitle: 'Splash placeholder. Onboarding will come next.',
+      ),
+    ),
     GoRoute(
       path: AppRoutes.onboarding,
       name: AppRouteNames.onboarding,
       builder: (context, state) => const FoundationPlaceholderScreen(
-        title: 'Onna Studios',
-        subtitle: 'Project foundation is ready.',
+        title: 'Onboarding',
+        subtitle: 'Welcome experience will be implemented later.',
       ),
     ),
     GoRoute(
@@ -31,46 +41,67 @@ final appRouter = GoRouter(
         subtitle: 'Registration UI will be implemented later.',
       ),
     ),
-    GoRoute(
-      path: AppRoutes.home,
-      name: AppRouteNames.home,
-      builder: (context, state) => const FoundationPlaceholderScreen(
-        title: 'Home',
-        subtitle: 'Main app shell will be implemented later.',
-      ),
-    ),
-    GoRoute(
-      path: AppRoutes.classes,
-      name: AppRouteNames.classes,
-      builder: (context, state) => const FoundationPlaceholderScreen(
-        title: 'Classes',
-        subtitle: 'Class discovery will be implemented later.',
-      ),
+    ShellRoute(
+      builder: (context, state, child) {
+        return MainAppShell(location: state.uri.path, child: child);
+      },
       routes: [
         GoRoute(
-          path: ':id',
-          name: AppRouteNames.classDetail,
-          builder: (context, state) => FoundationPlaceholderScreen(
-            title: 'Class Detail',
-            subtitle: 'Class id: ${state.pathParameters['id']}',
+          path: AppRoutes.home,
+          name: AppRouteNames.home,
+          builder: (context, state) => const PlaceholderContent(
+            title: 'Home',
+            subtitle: 'Home tab placeholder.',
+          ),
+        ),
+        GoRoute(
+          path: AppRoutes.classes,
+          name: AppRouteNames.classes,
+          builder: (context, state) => const PlaceholderContent(
+            title: 'Classes',
+            subtitle: 'Class discovery tab placeholder.',
+          ),
+        ),
+        GoRoute(
+          path: AppRoutes.schedule,
+          name: AppRouteNames.schedule,
+          builder: (context, state) => const PlaceholderContent(
+            title: 'Schedule',
+            subtitle: 'Timetable tab placeholder.',
+          ),
+        ),
+        GoRoute(
+          path: AppRoutes.package,
+          name: AppRouteNames.package,
+          builder: (context, state) => const PlaceholderContent(
+            title: 'Package',
+            subtitle: 'Membership tab placeholder.',
+          ),
+        ),
+        GoRoute(
+          path: AppRoutes.profile,
+          name: AppRouteNames.profile,
+          builder: (context, state) => const PlaceholderContent(
+            title: 'Profile',
+            subtitle: 'Member profile tab placeholder.',
           ),
         ),
       ],
     ),
     GoRoute(
-      path: AppRoutes.schedule,
-      name: AppRouteNames.schedule,
-      builder: (context, state) => const FoundationPlaceholderScreen(
-        title: 'Schedule',
-        subtitle: 'Timetable will be implemented later.',
+      path: AppRoutes.classDetail,
+      name: AppRouteNames.classDetail,
+      builder: (context, state) => FoundationPlaceholderScreen(
+        title: 'Class Detail',
+        subtitle: 'Class id: ${state.pathParameters['id']}',
       ),
     ),
     GoRoute(
       path: AppRoutes.booking,
       name: AppRouteNames.booking,
       builder: (context, state) => const FoundationPlaceholderScreen(
-        title: 'Booking',
-        subtitle: 'Booking flow will be implemented later.',
+        title: 'Booking Flow',
+        subtitle: 'Booking flow placeholder.',
       ),
     ),
     GoRoute(
@@ -78,7 +109,7 @@ final appRouter = GoRouter(
       name: AppRouteNames.bookingConfirmation,
       builder: (context, state) => const FoundationPlaceholderScreen(
         title: 'Booking Confirmation',
-        subtitle: 'QR confirmation will be implemented later.',
+        subtitle: 'QR confirmation placeholder.',
       ),
     ),
     GoRoute(
@@ -86,23 +117,15 @@ final appRouter = GoRouter(
       name: AppRouteNames.bookingHistory,
       builder: (context, state) => const FoundationPlaceholderScreen(
         title: 'Booking History',
-        subtitle: 'Reservation history will be implemented later.',
-      ),
-    ),
-    GoRoute(
-      path: AppRoutes.package,
-      name: AppRouteNames.package,
-      builder: (context, state) => const FoundationPlaceholderScreen(
-        title: 'Package',
-        subtitle: 'Membership packages will be implemented later.',
+        subtitle: 'Reservation history placeholder.',
       ),
     ),
     GoRoute(
       path: AppRoutes.wallet,
       name: AppRouteNames.wallet,
       builder: (context, state) => const FoundationPlaceholderScreen(
-        title: 'Wallet',
-        subtitle: 'Credit wallet will be implemented later.',
+        title: 'My Credit',
+        subtitle: 'Credit wallet placeholder.',
       ),
     ),
     GoRoute(
@@ -110,7 +133,7 @@ final appRouter = GoRouter(
       name: AppRouteNames.location,
       builder: (context, state) => const FoundationPlaceholderScreen(
         title: 'Location',
-        subtitle: 'Studio locations will be implemented later.',
+        subtitle: 'Studio locations placeholder.',
       ),
     ),
     GoRoute(
@@ -126,15 +149,7 @@ final appRouter = GoRouter(
       name: AppRouteNames.notification,
       builder: (context, state) => const FoundationPlaceholderScreen(
         title: 'Notifications',
-        subtitle: 'Studio updates will be implemented later.',
-      ),
-    ),
-    GoRoute(
-      path: AppRoutes.profile,
-      name: AppRouteNames.profile,
-      builder: (context, state) => const FoundationPlaceholderScreen(
-        title: 'Profile',
-        subtitle: 'Member profile will be implemented later.',
+        subtitle: 'Studio updates placeholder.',
       ),
     ),
   ],
