@@ -1,0 +1,18 @@
+abstract final class AppRoutes {
+  static const onboarding = '/';
+  static const login = '/login';
+  static const register = '/register';
+  static const home = '/home';
+  static const classes = '/classes';
+  static const classDetail = '/classes/:id';
+  static const schedule = '/schedule';
+  static const booking = '/booking';
+  static const bookingConfirmation = '/booking/confirmation';
+  static const bookingHistory = '/booking/history';
+  static const package = '/package';
+  static const wallet = '/wallet';
+  static const location = '/location';
+  static const instructorProfile = '/instructor/:id';
+  static const notification = '/notification';
+  static const profile = '/profile';
+}

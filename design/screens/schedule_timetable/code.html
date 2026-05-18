@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mood Studios - Schedule</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@500&amp;family=Manrope:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container": "#f0eee9",
+                    "inverse-primary": "#cdc5c0",
+                    "surface-container-lowest": "#ffffff",
+                    "inverse-surface": "#30312e",
+                    "secondary-container": "#fddab2",
+                    "primary-container": "#2d2926",
+                    "on-secondary-fixed-variant": "#594325",
+                    "on-primary-fixed-variant": "#4b4642",
+                    "error": "#ba1a1a",
+                    "outline": "#7e756f",
+                    "tertiary-fixed": "#ffdad3",
+                    "primary": "#181512",
+                    "surface-container-high": "#eae8e3",
+                    "surface-variant": "#e4e2dd",
+                    "on-primary-container": "#96908b",
+                    "surface-bright": "#fbf9f4",
+                    "on-secondary-container": "#785e3e",
+                    "on-tertiary-container": "#d17a66",
+                    "tertiary": "#320400",
+                    "on-error": "#ffffff",
+                    "surface-container-low": "#f5f3ee",
+                    "on-primary-fixed": "#1e1b18",
+                    "secondary-fixed": "#ffddb6",
+                    "on-secondary": "#ffffff",
+                    "surface-dim": "#dbdad5",
+                    "tertiary-fixed-dim": "#ffb4a4",
+                    "surface-container-highest": "#e4e2dd",
+                    "on-error-container": "#93000a",
+                    "on-surface-variant": "#4d4540",
+                    "secondary-fixed-dim": "#e2c19b",
+                    "tertiary-container": "#501609",
+                    "on-tertiary": "#ffffff",
+                    "background": "#fbf9f4",
+                    "error-container": "#ffdad6",
+                    "primary-fixed-dim": "#cdc5c0",
+                    "secondary": "#735a3a",
+                    "surface-tint": "#635d5a",
+                    "on-tertiary-fixed-variant": "#763223",
+                    "primary-fixed": "#e9e1dc",
+                    "on-secondary-fixed": "#291801",
+                    "on-background": "#1b1c19",
+                    "inverse-on-surface": "#f2f1ec",
+                    "outline-variant": "#cfc4bd",
+                    "surface": "#fbf9f4",
+                    "on-tertiary-fixed": "#3c0701",
+                    "on-surface": "#1b1c19",
+                    "on-primary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-mobile": "20px",
+                    "card-gap": "32px",
+                    "gutter": "24px",
+                    "margin-desktop": "64px",
+                    "unit": "8px",
+                    "section-padding": "120px"
+            },
+            "fontFamily": {
+                    "h2": ["Epilogue"],
+                    "body-md": ["Manrope"],
+                    "h3": ["Epilogue"],
+                    "label-caps": ["Manrope"],
+                    "body-lg": ["Manrope"],
+                    "h1": ["Epilogue"]
+            },
+            "fontSize": {
+                    "h2": ["36px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "h3": ["24px", {"lineHeight": "1.3", "fontWeight": "500"}],
+                    "label-caps": ["12px", {"lineHeight": "1.0", "letterSpacing": "0.1em", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "h1": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "500"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body { background-color: theme('colors.background'); color: theme('colors.on-background'); }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="antialiased pb-24 md:pb-0">
+<!-- TopAppBar -->
+<header class="bg-background dark:bg-inverse-surface w-full top-0 z-40 sticky">
+<div class="flex justify-between items-center w-full px-margin-mobile py-4 max-w-7xl mx-auto">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-variant flex items-center justify-center">
+<img alt="User Avatar" class="w-full h-full object-cover" data-alt="A serene, soft-focus portrait of a calm individual in a light-filled yoga studio setting. The lighting is natural and bright, highlighting a minimalist, premium aesthetic. Warm earthy tones subtly complement the creamy off-white background. The mood is peaceful and deeply grounding." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBA8hb7llqqlWSX37GyWXMEBMxKcu021IORTKxPRR_MG_xEm-icKUkyK5ZM_8W27ziLrbPAEk4MC7QA_OEFwIkUNakOsFMontcxm24Bo37loDD5e5cwQQg-Sf2Kab1VR-nwZTmD9HFTBCfg7-o6vyqxNmSnZFKVi7oimbwdLkitvJi8QKA2qscnyTfxraq09QVQhTZewMl1oGJBVKQZIo646noVa-oqcRTVfq8Jc_dKHhpW3VAwWr-nh85QtL7pPTu0gcQzg9iIN46Y"/>
+</div>
+<h1 class="font-h3 text-h3 font-medium text-primary dark:text-primary-fixed">Mood Studios</h1>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-primary dark:text-primary-fixed hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+</header>
+<!-- Main Content -->
+<main class="max-w-7xl mx-auto px-margin-mobile md:px-margin-desktop py-8 flex flex-col gap-card-gap">
+<!-- Header & Filters -->
+<section class="flex flex-col gap-6">
+<div class="flex justify-between items-end">
+<div>
+<h2 class="font-h2 text-h2 text-primary">Schedule</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2">Find your balance today.</p>
+</div>
+</div>
+<!-- Weekly Calendar Strip -->
+<div class="flex gap-4 overflow-x-auto pb-4 hide-scrollbar snap-x">
+<button class="snap-center flex-shrink-0 flex flex-col items-center justify-center w-16 h-20 rounded-xl bg-surface-container border border-outline-variant text-on-surface-variant">
+<span class="font-label-caps text-label-caps opacity-60">Mon</span>
+<span class="font-h3 text-h3 mt-1">12</span>
+</button>
+<button class="snap-center flex-shrink-0 flex flex-col items-center justify-center w-16 h-20 rounded-xl bg-primary text-on-primary shadow-sm shadow-primary-container/10">
+<span class="font-label-caps text-label-caps opacity-80">Tue</span>
+<span class="font-h3 text-h3 mt-1">13</span>
+</button>
+<button class="snap-center flex-shrink-0 flex flex-col items-center justify-center w-16 h-20 rounded-xl bg-surface-container border border-outline-variant text-on-surface-variant">
+<span class="font-label-caps text-label-caps opacity-60">Wed</span>
+<span class="font-h3 text-h3 mt-1">14</span>
+</button>
+<button class="snap-center flex-shrink-0 flex flex-col items-center justify-center w-16 h-20 rounded-xl bg-surface-container border border-outline-variant text-on-surface-variant">
+<span class="font-label-caps text-label-caps opacity-60">Thu</span>
+<span class="font-h3 text-h3 mt-1">15</span>
+</button>
+<button class="snap-center flex-shrink-0 flex flex-col items-center justify-center w-16 h-20 rounded-xl bg-surface-container border border-outline-variant text-on-surface-variant">
+<span class="font-label-caps text-label-caps opacity-60">Fri</span>
+<span class="font-h3 text-h3 mt-1">16</span>
+</button>
+<button class="snap-center flex-shrink-0 flex flex-col items-center justify-center w-16 h-20 rounded-xl bg-surface-container border border-outline-variant text-on-surface-variant">
+<span class="font-label-caps text-label-caps opacity-60">Sat</span>
+<span class="font-h3 text-h3 mt-1">17</span>
+</button>
+<button class="snap-center flex-shrink-0 flex flex-col items-center justify-center w-16 h-20 rounded-xl bg-surface-container border border-outline-variant text-on-surface-variant">
+<span class="font-label-caps text-label-caps opacity-60">Sun</span>
+<span class="font-h3 text-h3 mt-1">18</span>
+</button>
+</div>
+</section>
+<!-- Classes List -->
+<section class="flex flex-col gap-6">
+<!-- Class Item 1 -->
+<div class="group flex flex-col md:flex-row bg-surface-container-lowest rounded-xl border border-surface-variant shadow-[0_8px_30px_rgb(45,41,38,0.04)] overflow-hidden hover:border-outline-variant transition-colors">
+<div class="w-full md:w-48 h-32 md:h-auto shrink-0 relative bg-surface-container">
+<img alt="Vinyasa Flow" class="w-full h-full object-cover" data-alt="A minimalist, sunlit studio space featuring beautifully textured wooden floors and a single woven yoga mat. The lighting is soft, morning light creating long, calming shadows. The aesthetic is clean, luxurious, and earthy, emphasizing breathable white space and a terracotta-tinged warmth." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCiL-_ozUme1yeNh76Az3BOoC0qeg2YxDAHsT5MlIuDPOU7ENQ0S6UDRPJWdPpHOFrvn6bi364UudBeQIm8VkBnzSW7-ohtPgTsvG_Nuy84Jmll5UMy0IZQ9Utta3z4bT7_pSy0WclwDhKSngAZpZpnOxigug1XJc8DSCprawtnYLSG3jfwOi61xTIh4IZBC5Ey1mkeJYCPU441jrMk5Y_qpALlqKx6a0SGNRpaseUKsGBZsBTpCEKhiq21HUa03lJxxgUh-uVoMpZy"/>
+<div class="absolute top-3 left-3 bg-tertiary-container/90 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1">
+<div class="w-2 h-2 rounded-full bg-on-tertiary"></div>
+<span class="font-label-caps text-label-caps text-on-tertiary">Power</span>
+</div>
+</div>
+<div class="p-6 flex flex-col justify-between w-full gap-4">
+<div class="flex justify-between items-start">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="font-body-md text-body-md font-semibold text-primary">07:00</span>
+<span class="font-body-md text-body-md text-on-surface-variant opacity-50">- 08:00</span>
+</div>
+<h3 class="font-h3 text-h3 text-primary">Morning Vinyasa</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">with Sarah Jenkins</p>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-label-caps text-label-caps text-on-tertiary-container bg-tertiary-fixed px-3 py-1 rounded-full">3 Spots Left</span>
+</div>
+</div>
+<div class="flex justify-end mt-2 md:mt-0">
+<button class="bg-primary text-on-primary font-body-md text-body-md px-8 py-3 rounded-full hover:bg-tertiary-container transition-colors shadow-sm">
+                            Book
+                        </button>
+</div>
+</div>
+</div>
+<!-- Class Item 2 -->
+<div class="group flex flex-col md:flex-row bg-surface-container-lowest rounded-xl border border-surface-variant shadow-[0_8px_30px_rgb(45,41,38,0.04)] overflow-hidden hover:border-outline-variant transition-colors">
+<div class="w-full md:w-48 h-32 md:h-auto shrink-0 relative bg-surface-container">
+<img alt="Restorative Yoga" class="w-full h-full object-cover" data-alt="A serene, dimly lit restorative yoga setup with plush bolsters and soft linen blankets neatly arranged on a high-end yoga mat. The color palette features muted beiges, soft creams, and a touch of deep charcoal. The mood is deeply relaxing and luxurious, focusing on tactile comfort." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzGp_EyIcDrHAtWkfvqwh2OHMEqK3pW81hFNLmkAVi1eiE_ogQH0DFy8UJLmq1B1NTlmBQ3ykwW8otYHW7Crn7ucRk-hRAydM3T0be8L49EBx3LM-D_4xd7xk1g3vOpD3pudAEF-fNt_d1Z7WkqkRdx9VoDxmj8HKyOkwKOSMjN_V38HmazhsBpYidWs1GfxjBwNwlVYnhq_Li134k8pBbomAODbUnQmW9WS5b-sVZVY1OOLb3r7VJ7OTJjlfYvJjYr_b_YIkDHLb6"/>
+<div class="absolute top-3 left-3 bg-secondary-container/90 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1">
+<div class="w-2 h-2 rounded-full bg-on-secondary-container"></div>
+<span class="font-label-caps text-label-caps text-on-secondary-container">Restorative</span>
+</div>
+</div>
+<div class="p-6 flex flex-col justify-between w-full gap-4">
+<div class="flex justify-between items-start">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="font-body-md text-body-md font-semibold text-primary">09:00</span>
+<span class="font-body-md text-body-md text-on-surface-variant opacity-50">- 10:15</span>
+</div>
+<h3 class="font-h3 text-h3 text-primary">Deep Rest</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">with Michael Chang</p>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-label-caps text-label-caps text-on-surface-variant bg-surface-container-high px-3 py-1 rounded-full">Available</span>
+</div>
+</div>
+<div class="flex justify-end mt-2 md:mt-0">
+<button class="bg-primary text-on-primary font-body-md text-body-md px-8 py-3 rounded-full hover:bg-tertiary-container transition-colors shadow-sm">
+                            Book
+                        </button>
+</div>
+</div>
+</div>
+<!-- Class Item 3 -->
+<div class="group flex flex-col md:flex-row bg-surface-container-lowest rounded-xl border border-surface-variant shadow-[0_8px_30px_rgb(45,41,38,0.04)] overflow-hidden hover:border-outline-variant transition-colors opacity-70">
+<div class="w-full md:w-48 h-32 md:h-auto shrink-0 relative bg-surface-container">
+<img alt="Sculpt" class="w-full h-full object-cover grayscale" data-alt="A minimal arrangement of small, elegant free weights and a resistance band on a pristine white background. The image is styled like a high-fashion editorial, utilizing stark, clean lighting and a highly restrained color palette. The aesthetic conveys strength and modern luxury." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAvpJLmw4yrduiaWehYMX8K667gD1Pyv40c2PZOGV-IGZlWHp8NmXwAJyOLJcCdmuO8qoPHBOZ9WMREv5yhxWxo_04_5l_0_gVhIEd1wM3m9MVUCd5agPuP3jcWXIUq2Z6wJMa1W5dbS0Ay96_SXIjBePQnhvYuAWhzVHpBEJBi5CE8xAqcPeylUOCLUZhXM_5vlZwEKrqLpSKbfDP9IkYfREWLZ0RdTNlc7P6B7sl32Guda4vf2TrwZeeYD1S5vFZQAXG8q5_D3Rzk"/>
+<div class="absolute top-3 left-3 bg-surface-variant/90 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1">
+<div class="w-2 h-2 rounded-full bg-on-surface-variant"></div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Sculpt</span>
+</div>
+</div>
+<div class="p-6 flex flex-col justify-between w-full gap-4">
+<div class="flex justify-between items-start">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="font-body-md text-body-md font-semibold text-primary">17:00</span>
+<span class="font-body-md text-body-md text-on-surface-variant opacity-50">- 18:00</span>
+</div>
+<h3 class="font-h3 text-h3 text-primary">Evening Sculpt</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">with Elena Rossi</p>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-label-caps text-label-caps text-error bg-error-container px-3 py-1 rounded-full">Waitlist</span>
+</div>
+</div>
+<div class="flex justify-end mt-2 md:mt-0">
+<button class="bg-surface-container border border-outline-variant text-on-surface-variant font-body-md text-body-md px-8 py-3 rounded-full hover:bg-surface-variant transition-colors shadow-sm">
+                            Join Waitlist
+                        </button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="md:hidden bg-surface-container-low dark:bg-inverse-surface shadow-[0_-4px_20px_0px_rgba(45,41,38,0.04)] docked full-width bottom-0 rounded-t-xl fixed left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3">
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant opacity-60 hover:text-secondary transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">home</span>
+<span class="font-label-caps text-label-caps mt-1">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant opacity-60 hover:text-secondary transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">self_care</span>
+<span class="font-label-caps text-label-caps mt-1">Classes</span>
+</button>
+<button class="flex flex-col items-center justify-center text-primary dark:text-secondary-fixed-dim font-bold hover:text-secondary transition-colors Active: scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">calendar_today</span>
+<span class="font-label-caps text-label-caps mt-1">Schedule</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant opacity-60 hover:text-secondary transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">payments</span>
+<span class="font-label-caps text-label-caps mt-1">Package</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant opacity-60 hover:text-secondary transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">person</span>
+<span class="font-label-caps text-label-caps mt-1">Profile</span>
+</button>
+</nav>
+</body></html>

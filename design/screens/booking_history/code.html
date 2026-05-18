@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Booking History - Mood Studios</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@500&amp;family=Manrope:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container": "#f0eee9",
+                      "inverse-primary": "#cdc5c0",
+                      "surface-container-lowest": "#ffffff",
+                      "inverse-surface": "#30312e",
+                      "secondary-container": "#fddab2",
+                      "primary-container": "#2d2926",
+                      "on-secondary-fixed-variant": "#594325",
+                      "on-primary-fixed-variant": "#4b4642",
+                      "error": "#ba1a1a",
+                      "outline": "#7e756f",
+                      "tertiary-fixed": "#ffdad3",
+                      "primary": "#181512",
+                      "surface-container-high": "#eae8e3",
+                      "surface-variant": "#e4e2dd",
+                      "on-primary-container": "#96908b",
+                      "surface-bright": "#fbf9f4",
+                      "on-secondary-container": "#785e3e",
+                      "on-tertiary-container": "#d17a66",
+                      "tertiary": "#320400",
+                      "on-error": "#ffffff",
+                      "surface-container-low": "#f5f3ee",
+                      "on-primary-fixed": "#1e1b18",
+                      "secondary-fixed": "#ffddb6",
+                      "on-secondary": "#ffffff",
+                      "surface-dim": "#dbdad5",
+                      "tertiary-fixed-dim": "#ffb4a4",
+                      "surface-container-highest": "#e4e2dd",
+                      "on-error-container": "#93000a",
+                      "on-surface-variant": "#4d4540",
+                      "secondary-fixed-dim": "#e2c19b",
+                      "tertiary-container": "#501609",
+                      "on-tertiary": "#ffffff",
+                      "background": "#fbf9f4",
+                      "error-container": "#ffdad6",
+                      "primary-fixed-dim": "#cdc5c0",
+                      "secondary": "#735a3a",
+                      "surface-tint": "#635d5a",
+                      "on-tertiary-fixed-variant": "#763223",
+                      "primary-fixed": "#e9e1dc",
+                      "on-secondary-fixed": "#291801",
+                      "on-background": "#1b1c19",
+                      "inverse-on-surface": "#f2f1ec",
+                      "outline-variant": "#cfc4bd",
+                      "surface": "#fbf9f4",
+                      "on-tertiary-fixed": "#3c0701",
+                      "on-surface": "#1b1c19",
+                      "on-primary": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-mobile": "20px",
+                      "card-gap": "32px",
+                      "gutter": "24px",
+                      "margin-desktop": "64px",
+                      "unit": "8px",
+                      "section-padding": "120px"
+              },
+              "fontFamily": {
+                      "h2": [
+                              "Epilogue"
+                      ],
+                      "body-md": [
+                              "Manrope"
+                      ],
+                      "h3": [
+                              "Epilogue"
+                      ],
+                      "label-caps": [
+                              "Manrope"
+                      ],
+                      "body-lg": [
+                              "Manrope"
+                      ],
+                      "h1": [
+                              "Epilogue"
+                      ]
+              },
+              "fontSize": {
+                      "h2": [
+                              "36px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "h3": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.0",
+                                      "letterSpacing": "0.1em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "h1": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "500"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="bg-background dark:bg-inverse-surface docked full-width top-0 flat no shadows flex justify-between items-center w-full px-margin-mobile py-4 max-w-7xl mx-auto z-40 relative">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-variant flex-shrink-0">
+<img alt="User profile portrait" class="w-full h-full object-cover" data-alt="Close up portrait of a relaxed young woman with soft natural lighting, reflecting a calm and poised personality. The background is a soft beige tone, aligning with the breathable luxury style of the brand." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDwyYhPPj2awUpbhlIaKULJWK36zr32A65pWTf_8YGZvUE5cTQxWr7Ji8xn4qiMMbXd12H1ku8X6ZbAXv2eTZTvaBb1x05Nm5tslPJ5XKhNCFNiwR8tDd61IKlHlbaqLTqLeGct51mf0xeLpB-ILDFiSo_2isq_-vAlOmCbvHA9jPzpO8VZSQjzIaWs8m170ALU9ttnHJFycqRTbNcpUXWedqdTsAO_xLyGtLOQ3dw0bXP2-tnQOgYKoJ9o9YIyEOkAZj6Vd-RZKPX"/>
+</div>
+</div>
+<div class="font-h3 text-h3 font-medium text-primary dark:text-primary-fixed">
+            Mood Studios
+        </div>
+<div class="flex items-center">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed cursor-pointer hover:opacity-80 transition-opacity" data-icon="notifications">notifications</span>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow w-full max-w-7xl mx-auto px-margin-mobile md:px-margin-desktop py-12 mb-24">
+<div class="mb-12">
+<h1 class="font-h1 text-h1 text-primary mb-4">Booking History</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">Review your past sessions and upcoming reservations in our studio.</p>
+</div>
+<!-- Bookings List -->
+<div class="space-y-4">
+<!-- Upcoming Booking -->
+<div class="bg-surface-container-lowest rounded-xl border border-surface-variant shadow-[0_8px_30px_rgba(45,41,38,0.04)] p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 transition-all duration-300 hover:shadow-[0_12px_40px_rgba(45,41,38,0.06)]">
+<div class="flex items-start gap-6">
+<div class="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-surface-container">
+<img alt="Vinyasa Flow" class="w-full h-full object-cover" data-alt="A serene yoga studio interior with soft natural light pouring in across light wood floors. Empty yoga mats are laid out neatly. The mood is calm and anticipatory, fitting a luxury minimal aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQZcBCjsckeaxRzgoMyuQDuBY2KtVY5ucwJgXl38Wike4k1KrBiW6uPCenfvl9-sYaxkXsdIQUDbr2MGRZG3Zl-3tlbP8Zm9G9fuAit51qaiRHpTeowRceuVwoTukzEePe1TXdzcv8lYTEhVzcQFJJheB2l12I1fQZo6QE1qz7Y7cRs7MPp7PMU2ZTwMj_0dS1Lc8ei0fZ8-iun0kFO4bRkAM3oSiDCJlqvq_DI2I6JuyeRSA6XdOo8mq1tPxWNYx3ER9kiYR0AVd5"/>
+</div>
+<div>
+<div class="flex items-center gap-3 mb-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Oct 24 • 9:00 AM</span>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary-container text-on-secondary-container">Upcoming</span>
+</div>
+<h3 class="font-h3 text-h3 text-primary mb-1">Morning Vinyasa Flow</h3>
+<p class="font-body-md text-body-md text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">person</span> Elena Rodriguez
+                        </p>
+</div>
+</div>
+<div class="flex gap-3 md:flex-col lg:flex-row">
+<button class="px-6 py-3 rounded-full border border-outline text-primary font-label-caps text-label-caps hover:bg-surface-container transition-colors duration-200 uppercase tracking-widest text-center w-full md:w-auto">Cancel</button>
+<button class="px-6 py-3 rounded-full bg-primary text-on-primary font-label-caps text-label-caps hover:bg-on-surface-variant transition-colors duration-200 uppercase tracking-widest text-center w-full md:w-auto">Reschedule</button>
+</div>
+</div>
+<!-- Completed Booking -->
+<div class="bg-surface-container-lowest rounded-xl border border-surface-variant shadow-[0_4px_20px_rgba(45,41,38,0.03)] p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 opacity-80">
+<div class="flex items-start gap-6">
+<div class="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-surface-container grayscale">
+<img alt="Restorative Yoga" class="w-full h-full object-cover" data-alt="Close up of a person meditating in a lotus pose, softly lit from the side. The image is rendered with low contrast and soft beige and charcoal tones, emphasizing tranquility and deep rest." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdE6cd84QTxmGfvJFP0Is95qAOksMIgQchUUmGj4cOUNUn_MXOwB6On48vUR3T88xHx8-Yh3Ia_zY5lnTHOdnp73qiAD71V2Hv7fLVE7RLc3LtD9JXiEh3aLfdMmArCZOsp6jgHsu_hO0t9T4qqweCEc25ufdpP9rdYg3M5B6ilwp5vkifdC64BmONtc0y4XDaoHtIAZvQvUTaj5vWHI4i_owWlDzUDu6Z8IgBjM_wWAVHXljDag6Ut0P3tVZNU5szUhNTPjDUrH7x"/>
+</div>
+<div>
+<div class="flex items-center gap-3 mb-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Oct 20 • 6:00 PM</span>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-surface-variant text-on-surface-variant">Completed</span>
+</div>
+<h3 class="font-h3 text-h3 text-primary mb-1">Deep Restorative</h3>
+<p class="font-body-md text-body-md text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">person</span> Sarah Chen
+                        </p>
+</div>
+</div>
+<div class="flex">
+<button class="px-6 py-3 rounded-full border border-outline text-primary font-label-caps text-label-caps hover:bg-surface-container transition-colors duration-200 uppercase tracking-widest text-center w-full md:w-auto">Book Again</button>
+</div>
+</div>
+<!-- Canceled Booking -->
+<div class="bg-surface-container-lowest rounded-xl border border-surface-variant shadow-[0_4px_20px_rgba(45,41,38,0.03)] p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 opacity-60">
+<div class="flex items-start gap-6">
+<div class="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-surface-container grayscale">
+<img alt="Power Pilates" class="w-full h-full object-cover" data-alt="A minimalist fitness prop setup featuring a single sleek dumbbell and a rolled-up yoga mat on a textured beige surface. The lighting is diffused, casting soft shadows, fitting a calm studio environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfRLGifNqXPeq2MJdlMxo3QvrGEYvJLSsVZpRbsqHVllT1XLuYbDG3mV989tCcvWZCEjJt8x7hA1uGoXkdEVW4KR3Ye3cxjW7vObdyJnHPkgNroknsn0PLf5v77_mvMsUnJtId_Mj5RFEMG4Fshq4W6T5kBinN8dLXwrdxLkP-8Ny1l2PFd3O3_5sBLlZkij0GXUIcwBs7nPaPWEb70BBB8T6ucxKj21G311BTvpuIZbS72XO5QMhXRAEtJ7bYh-428BJIXY-2lwGW"/>
+</div>
+<div>
+<div class="flex items-center gap-3 mb-2">
+<span class="font-label-caps text-label-caps text-outline uppercase tracking-wider">Oct 18 • 12:00 PM</span>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-error-container text-on-error-container">Canceled</span>
+</div>
+<h3 class="font-h3 text-h3 text-primary mb-1 text-on-surface-variant line-through decoration-1">Power Pilates</h3>
+<p class="font-body-md text-body-md text-outline flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">person</span> Marcus Wright
+                        </p>
+</div>
+</div>
+</div>
+<!-- Completed Booking -->
+<div class="bg-surface-container-lowest rounded-xl border border-surface-variant shadow-[0_4px_20px_rgba(45,41,38,0.03)] p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 opacity-80">
+<div class="flex items-start gap-6">
+<div class="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-surface-container grayscale">
+<img alt="Meditation" class="w-full h-full object-cover" data-alt="A serene, empty room with a single meditation cushion centered on a light wood floor. Soft, warm light streams through a window, creating a peaceful, contemplative atmosphere in a luxury minimal setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAm5Km6SLXuX17YTf6WjdawHIcSLRMs7L45XLjzSxLy10CpQsmol36s6ciVxw-O8Z1OVj0sSJmyaOCKhVOdhuLqAJ3tqP5Dl37FtRNXfpVFevuJleu9zKWh9v76L83CUD0dalDW9qeRs1Y75gIeFfzIqyQ36or3zKAwQoQd6QW2DwmjDOoWBw475Ka4LIrAXsyiHo5DPRC5M4lW6Prp7uu9jEk6bKDJjDHrRrYBs54X4Ail-UByRjDSbXKigle3LJemGicfZsgT18HQ"/>
+</div>
+<div>
+<div class="flex items-center gap-3 mb-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Oct 15 • 7:00 AM</span>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-surface-variant text-on-surface-variant">Completed</span>
+</div>
+<h3 class="font-h3 text-h3 text-primary mb-1">Guided Meditation</h3>
+<p class="font-body-md text-body-md text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">person</span> Elena Rodriguez
+                        </p>
+</div>
+</div>
+<div class="flex">
+<button class="px-6 py-3 rounded-full border border-outline text-primary font-label-caps text-label-caps hover:bg-surface-container transition-colors duration-200 uppercase tracking-widest text-center w-full md:w-auto">Book Again</button>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="md:hidden bg-surface-container-low dark:bg-inverse-surface shadow-[0_-4px_20px_0px_rgba(45,41,38,0.04)] fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant opacity-60 hover:text-secondary transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="home">home</span>
+<span class="font-label-caps text-[10px]">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant opacity-60 hover:text-secondary transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="self_care">self_care</span>
+<span class="font-label-caps text-[10px]">Classes</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant opacity-60 hover:text-secondary transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="calendar_today">calendar_today</span>
+<span class="font-label-caps text-[10px]">Schedule</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant opacity-60 hover:text-secondary transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="payments">payments</span>
+<span class="font-label-caps text-[10px]">Package</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary dark:text-secondary-fixed-dim font-bold hover:text-secondary transition-colors scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="person" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-caps text-[10px]">Profile</span>
+</a>
+</nav>
+</body></html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mood Studios - Notifications</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@500&amp;family=Manrope:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container": "#f0eee9",
+                        "inverse-primary": "#cdc5c0",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-surface": "#30312e",
+                        "secondary-container": "#fddab2",
+                        "primary-container": "#2d2926",
+                        "on-secondary-fixed-variant": "#594325",
+                        "on-primary-fixed-variant": "#4b4642",
+                        "error": "#ba1a1a",
+                        "outline": "#7e756f",
+                        "tertiary-fixed": "#ffdad3",
+                        "primary": "#181512",
+                        "surface-container-high": "#eae8e3",
+                        "surface-variant": "#e4e2dd",
+                        "on-primary-container": "#96908b",
+                        "surface-bright": "#fbf9f4",
+                        "on-secondary-container": "#785e3e",
+                        "on-tertiary-container": "#d17a66",
+                        "tertiary": "#320400",
+                        "on-error": "#ffffff",
+                        "surface-container-low": "#f5f3ee",
+                        "on-primary-fixed": "#1e1b18",
+                        "secondary-fixed": "#ffddb6",
+                        "on-secondary": "#ffffff",
+                        "surface-dim": "#dbdad5",
+                        "tertiary-fixed-dim": "#ffb4a4",
+                        "surface-container-highest": "#e4e2dd",
+                        "on-error-container": "#93000a",
+                        "on-surface-variant": "#4d4540",
+                        "secondary-fixed-dim": "#e2c19b",
+                        "tertiary-container": "#501609",
+                        "on-tertiary": "#ffffff",
+                        "background": "#fbf9f4",
+                        "error-container": "#ffdad6",
+                        "primary-fixed-dim": "#cdc5c0",
+                        "secondary": "#735a3a",
+                        "surface-tint": "#635d5a",
+                        "on-tertiary-fixed-variant": "#763223",
+                        "primary-fixed": "#e9e1dc",
+                        "on-secondary-fixed": "#291801",
+                        "on-background": "#1b1c19",
+                        "inverse-on-surface": "#f2f1ec",
+                        "outline-variant": "#cfc4bd",
+                        "surface": "#fbf9f4",
+                        "on-tertiary-fixed": "#3c0701",
+                        "on-surface": "#1b1c19",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "20px",
+                        "card-gap": "32px",
+                        "gutter": "24px",
+                        "margin-desktop": "64px",
+                        "unit": "8px",
+                        "section-padding": "120px"
+                    },
+                    "fontFamily": {
+                        "h2": ["Epilogue"],
+                        "body-md": ["Manrope"],
+                        "h3": ["Epilogue"],
+                        "label-caps": ["Manrope"],
+                        "body-lg": ["Manrope"],
+                        "h1": ["Epilogue"]
+                    },
+                    "fontSize": {
+                        "h2": ["36px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "h3": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }],
+                        "label-caps": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.1em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "h1": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #fbf9f4; /* Fallback */
+        }
+        /* Custom Ambient Shadow for breathable luxury */
+        .shadow-ambient {
+            box-shadow: 0 10px 40px -10px rgba(45, 41, 38, 0.06);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background antialiased min-h-screen flex flex-col font-body-md text-body-md">
+<!-- TopAppBar from Shared Components JSON -->
+<header class="bg-background dark:bg-inverse-surface docked full-width top-0 sticky z-50">
+<div class="flex justify-between items-center w-full px-margin-mobile py-4 max-w-7xl mx-auto">
+<!-- Leading Avatar -->
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A minimalist, high-key portrait of a poised individual, softly lit against a warm cream background. The aesthetic is editorial and sophisticated, fitting a luxury wellness brand. The person exudes a sense of calm and grounded energy, complementing the light-mode, airy atmosphere. The color palette focuses on soft beiges, warm skin tones, and bright off-whites, perfectly aligned with the studio's organic visual style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBcLSzyZmOWfZFA8NTknEJlZNSzVkEJRpaOcIlyCRRyfa8n2a4SfEbsDA6RxAISww1kXyflWCRwsLtvRv5sJude30iAdyR2ju4bcDfm3kVb5WTB_Js0jxVzN5zr5Zi3XA5xsfhGzoY22gpc7-UZ8D34CojD5xAYYQ3ucFFmuyIj6vJWRnldg6oqCAZpirbE4emsUcs87m5nFgGZ3ux0Pl59_HDNX5vI-debEqvBwTCyUsfuR1PQbExQqtJqw3GLv3f3nD3Go5_C0JXU"/>
+</div>
+<!-- Headline -->
+<h1 class="font-h3 text-h3 font-medium text-primary dark:text-primary-fixed">
+                Mood Studios
+            </h1>
+<!-- Trailing Icon (Active State visually implied for current page) -->
+<button aria-label="Notifications" class="text-primary dark:text-primary-fixed hover:opacity-80 transition-opacity w-10 h-10 flex items-center justify-center rounded-full bg-surface-container-low">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">notifications</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow w-full max-w-3xl mx-auto px-margin-mobile md:px-0 py-gutter pb-section-padding">
+<!-- Page Header Area -->
+<div class="mb-card-gap pt-unit flex justify-between items-end">
+<div>
+<h2 class="font-h2 text-h2 text-primary mb-2">Updates</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Your latest studio news and reminders.</p>
+</div>
+<button class="font-label-caps text-label-caps text-secondary hover:opacity-80 transition-opacity uppercase tracking-widest">
+                Mark all as read
+            </button>
+</div>
+<!-- Notification List Container -->
+<div class="flex flex-col gap-unit">
+<!-- Unread Notification: Class Reminder -->
+<div class="group relative bg-surface-container-lowest rounded-xl p-gutter shadow-ambient border border-outline-variant/30 flex items-start gap-gutter transition-all duration-300 hover:shadow-lg">
+<!-- Unread Indicator Dot -->
+<div class="absolute top-gutter left-unit w-2 h-2 rounded-full bg-secondary"></div>
+<!-- Icon -->
+<div class="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center flex-shrink-0 text-on-secondary-container">
+<span class="material-symbols-outlined">self_improvement</span>
+</div>
+<!-- Content -->
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-body-lg text-body-lg text-primary font-medium">Upcoming Class</h3>
+<span class="font-label-caps text-label-caps text-outline uppercase tracking-wider">Just now</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-3">
+                        Your <strong>Vinyasa Flow</strong> class with Sarah begins in 2 hours. Don't forget your mat and water bottle. We look forward to seeing you in Studio A.
+                    </p>
+<div class="flex gap-4">
+<button class="font-label-caps text-label-caps text-secondary font-semibold hover:opacity-80 transition-opacity uppercase tracking-widest">View Details</button>
+<button class="font-label-caps text-label-caps text-outline hover:text-primary transition-colors uppercase tracking-widest">Cancel</button>
+</div>
+</div>
+</div>
+<!-- Unread Notification: Package Deal -->
+<div class="group relative bg-surface-container-lowest rounded-xl p-gutter shadow-ambient border border-outline-variant/30 flex items-start gap-gutter transition-all duration-300 hover:shadow-lg">
+<!-- Unread Indicator Dot -->
+<div class="absolute top-gutter left-unit w-2 h-2 rounded-full bg-secondary"></div>
+<!-- Icon -->
+<div class="w-12 h-12 rounded-full bg-tertiary-fixed flex items-center justify-center flex-shrink-0 text-on-tertiary-fixed-variant">
+<span class="material-symbols-outlined">stars</span>
+</div>
+<!-- Content -->
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-body-lg text-body-lg text-primary font-medium">New Package Available</h3>
+<span class="font-label-caps text-label-caps text-outline uppercase tracking-wider">2 hrs ago</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-3">
+                        Elevate your practice. We've just released an exclusive <strong>10-Class Master Pack</strong>. Enjoy a 15% discount when you purchase before Sunday.
+                    </p>
+<button class="font-label-caps text-label-caps text-secondary font-semibold hover:opacity-80 transition-opacity uppercase tracking-widest">Explore Packages</button>
+</div>
+</div>
+<!-- Date Separator -->
+<div class="py-6 flex items-center gap-4">
+<div class="h-px bg-outline-variant flex-grow opacity-50"></div>
+<span class="font-label-caps text-label-caps text-outline uppercase tracking-widest">Earlier this week</span>
+<div class="h-px bg-outline-variant flex-grow opacity-50"></div>
+</div>
+<!-- Read Notification: Schedule Update -->
+<div class="group relative bg-transparent rounded-xl p-gutter border border-transparent hover:border-outline-variant/20 hover:bg-surface-container-lowest flex items-start gap-gutter transition-all duration-300">
+<!-- Icon -->
+<div class="w-12 h-12 rounded-full bg-surface-variant flex items-center justify-center flex-shrink-0 text-on-surface-variant">
+<span class="material-symbols-outlined">calendar_month</span>
+</div>
+<!-- Content -->
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-body-lg text-body-lg text-primary font-medium">Schedule Update</h3>
+<span class="font-label-caps text-label-caps text-outline uppercase tracking-wider">Mon, 9:00 AM</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                        Please note that Thursday's Evening Restorative Yoga has been moved to <strong>Studio B</strong> to accommodate a larger space for deep relaxation.
+                    </p>
+</div>
+</div>
+<!-- Read Notification: General Welcome -->
+<div class="group relative bg-transparent rounded-xl p-gutter border border-transparent hover:border-outline-variant/20 hover:bg-surface-container-lowest flex items-start gap-gutter transition-all duration-300">
+<!-- Icon -->
+<div class="w-12 h-12 rounded-full bg-surface-variant flex items-center justify-center flex-shrink-0 text-on-surface-variant">
+<span class="material-symbols-outlined">favorite</span>
+</div>
+<!-- Content -->
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-body-lg text-body-lg text-primary font-medium">Welcome to Mood</h3>
+<span class="font-label-caps text-label-caps text-outline uppercase tracking-wider">Oct 12</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                        We are thrilled to welcome you to the community. Take a deep breath, explore our class offerings, and find the practice that suits your rhythm today.
+                    </p>
+</div>
+</div>
+</div>
+</main>
+</body></html>

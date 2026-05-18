@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Booking Confirmation - Mood Studios</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@500&amp;family=Manrope:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container": "#f0eee9",
+                    "inverse-primary": "#cdc5c0",
+                    "surface-container-lowest": "#ffffff",
+                    "inverse-surface": "#30312e",
+                    "secondary-container": "#fddab2",
+                    "primary-container": "#2d2926",
+                    "on-secondary-fixed-variant": "#594325",
+                    "on-primary-fixed-variant": "#4b4642",
+                    "error": "#ba1a1a",
+                    "outline": "#7e756f",
+                    "tertiary-fixed": "#ffdad3",
+                    "primary": "#181512",
+                    "surface-container-high": "#eae8e3",
+                    "surface-variant": "#e4e2dd",
+                    "on-primary-container": "#96908b",
+                    "surface-bright": "#fbf9f4",
+                    "on-secondary-container": "#785e3e",
+                    "on-tertiary-container": "#d17a66",
+                    "tertiary": "#320400",
+                    "on-error": "#ffffff",
+                    "surface-container-low": "#f5f3ee",
+                    "on-primary-fixed": "#1e1b18",
+                    "secondary-fixed": "#ffddb6",
+                    "on-secondary": "#ffffff",
+                    "surface-dim": "#dbdad5",
+                    "tertiary-fixed-dim": "#ffb4a4",
+                    "surface-container-highest": "#e4e2dd",
+                    "on-error-container": "#93000a",
+                    "on-surface-variant": "#4d4540",
+                    "secondary-fixed-dim": "#e2c19b",
+                    "tertiary-container": "#501609",
+                    "on-tertiary": "#ffffff",
+                    "background": "#fbf9f4",
+                    "error-container": "#ffdad6",
+                    "primary-fixed-dim": "#cdc5c0",
+                    "secondary": "#735a3a",
+                    "surface-tint": "#635d5a",
+                    "on-tertiary-fixed-variant": "#763223",
+                    "primary-fixed": "#e9e1dc",
+                    "on-secondary-fixed": "#291801",
+                    "on-background": "#1b1c19",
+                    "inverse-on-surface": "#f2f1ec",
+                    "outline-variant": "#cfc4bd",
+                    "surface": "#fbf9f4",
+                    "on-tertiary-fixed": "#3c0701",
+                    "on-surface": "#1b1c19",
+                    "on-primary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-mobile": "20px",
+                    "card-gap": "32px",
+                    "gutter": "24px",
+                    "margin-desktop": "64px",
+                    "unit": "8px",
+                    "section-padding": "120px"
+            },
+            "fontFamily": {
+                    "h2": ["Epilogue"],
+                    "body-md": ["Manrope"],
+                    "h3": ["Epilogue"],
+                    "label-caps": ["Manrope"],
+                    "body-lg": ["Manrope"],
+                    "h1": ["Epilogue"]
+            },
+            "fontSize": {
+                    "h2": ["36px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+                    "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                    "h3": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }],
+                    "label-caps": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.1em", "fontWeight": "600" }],
+                    "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                    "h1": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "500" }]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        /* Base styles to ensure consistency */
+        body {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        /* Custom ambient shadow as per guidelines */
+        .ambient-shadow {
+            box-shadow: 0 8px 32px 0 rgba(45, 41, 38, 0.04);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background min-h-screen flex flex-col font-body-md text-body-md text-on-background">
+<!-- Main Content Canvas (Navigation explicitly suppressed for transactional success state) -->
+<main class="flex-grow flex flex-col items-center justify-center px-margin-mobile py-section-padding w-full max-w-2xl mx-auto">
+<!-- Header / Success Message -->
+<div class="flex flex-col items-center text-center w-full mb-12">
+<span class="material-symbols-outlined text-on-tertiary-container mb-6" style="font-size: 64px; font-variation-settings: 'FILL' 1;">
+                check_circle
+            </span>
+<h1 class="font-h2 text-h2 text-primary">You're all set!</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-3 max-w-md">
+                Your spot for the Restorative Vinyasa class has been securely booked. We look forward to seeing you in the studio.
+            </p>
+</div>
+<!-- QR Code Card -->
+<div class="w-full bg-surface-container-lowest rounded-xl p-8 flex flex-col items-center justify-center ambient-shadow border border-surface-variant mb-card-gap">
+<div class="w-48 h-48 bg-surface-container flex items-center justify-center rounded-lg overflow-hidden mb-6">
+<!-- Using a placeholder image for the QR code to allow for dynamic generation -->
+<img alt="Check-in QR Code" class="w-full h-full object-cover mix-blend-multiply opacity-90" data-alt="A minimalist, abstract digital graphic resembling a high-tech but elegant QR code. The design features soft, rounded geometric patterns in a subtle terracotta and charcoal color scheme against a pristine, off-white background. The lighting is diffused and even, emphasizing a 'breathable luxury' and poised aesthetic suitable for a high-end yoga sanctuary's digital check-in. The overall mood is calm, modern, and perfectly aligned with a light-mode editorial design style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnGjhh6sE9NSWiL5xY3KsK4ESfBRQGFPCOGT1YCfxqYb9qxbwn3B9K4RE-EzNXlG3bm1l4BktOKzH90IQuMj08l-g3UGw2JMev4iPfPngMO1mvItVPq7D1VYfSBGwfQl93mtwTzJ6ZyUxo5NZUrtIRIDu-ETb0w5pbaA7Ch1o6QXdZoBJRRjU8k8CNVyW8jKlG8tysbwDmDCKzjNT8M7roC78szcHEmBo7jaOWClNvKZQrX28Atq7vqwx52W5WHmIWmlsCDboLCopW"/>
+</div>
+<p class="font-label-caps text-label-caps text-outline uppercase">Scan at Front Desk</p>
+</div>
+<!-- Class Details (Bento-style list) -->
+<div class="w-full bg-surface-container-low rounded-xl p-6 flex flex-col gap-6 ambient-shadow mb-12">
+<!-- Detail Row 1 -->
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-on-surface-variant" style="font-size: 20px;">calendar_today</span>
+</div>
+<div class="flex flex-col pt-1">
+<span class="font-label-caps text-label-caps text-outline uppercase mb-1">Date &amp; Time</span>
+<span class="font-body-lg text-body-lg text-primary">Thursday, October 24</span>
+<span class="font-body-md text-body-md text-on-surface-variant">9:00 AM - 10:15 AM</span>
+</div>
+</div>
+<div class="w-full h-px bg-outline-variant opacity-50"></div>
+<!-- Detail Row 2 -->
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-on-surface-variant" style="font-size: 20px;">location_on</span>
+</div>
+<div class="flex flex-col pt-1">
+<span class="font-label-caps text-label-caps text-outline uppercase mb-1">Location</span>
+<span class="font-body-lg text-body-lg text-primary">Studio A - The Sanctuary</span>
+<span class="font-body-md text-body-md text-on-surface-variant">124 Calm Avenue, 2nd Floor</span>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="w-full flex flex-col gap-4">
+<button class="w-full py-4 px-8 bg-on-tertiary-container text-white rounded-full font-label-caps text-label-caps uppercase hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+<span class="material-symbols-outlined" style="font-size: 18px;">event</span>
+                Add to Calendar
+            </button>
+<button class="w-full py-4 px-8 bg-transparent border border-secondary text-primary rounded-full font-label-caps text-label-caps uppercase hover:bg-surface-container-low transition-colors flex items-center justify-center gap-2">
+                View My Schedule
+            </button>
+</div>
+</main>
+</body></html>
