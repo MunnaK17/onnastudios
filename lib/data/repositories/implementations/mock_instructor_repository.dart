@@ -37,7 +37,9 @@ class MockInstructorRepository implements InstructorRepository {
   ) async {
     await Future.delayed(const Duration(milliseconds: 100));
     return MockOnnaData.instructors
-        .where((i) => i.specialty.toLowerCase().contains(specialty.toLowerCase()))
+        .where(
+          (i) => i.specialty.toLowerCase().contains(specialty.toLowerCase()),
+        )
         .toList();
   }
 }

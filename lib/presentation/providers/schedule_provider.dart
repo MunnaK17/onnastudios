@@ -18,20 +18,21 @@ final allSchedulesProvider = FutureProvider<List<ScheduleModel>>((ref) async {
 /// Provider for schedules by date.
 final schedulesByDateProvider =
     FutureProvider.family<List<ScheduleModel>, DateTime>((ref, date) async {
-  final repository = ref.watch(scheduleRepositoryProvider);
-  return repository.getSchedulesByDate(date);
-});
+      final repository = ref.watch(scheduleRepositoryProvider);
+      return repository.getSchedulesByDate(date);
+    });
 
 /// Provider for schedules by class ID.
 final schedulesByClassIdProvider =
     FutureProvider.family<List<ScheduleModel>, String>((ref, classId) async {
-  final repository = ref.watch(scheduleRepositoryProvider);
-  return repository.getSchedulesByClassId(classId);
-});
+      final repository = ref.watch(scheduleRepositoryProvider);
+      return repository.getSchedulesByClassId(classId);
+    });
 
 /// Provider for available schedules only.
-final availableSchedulesProvider =
-    FutureProvider<List<ScheduleModel>>((ref) async {
+final availableSchedulesProvider = FutureProvider<List<ScheduleModel>>((
+  ref,
+) async {
   final repository = ref.watch(scheduleRepositoryProvider);
   return repository.getAvailableSchedules();
 });
@@ -51,24 +52,25 @@ class SelectedDateNotifier extends Notifier<DateTime> {
 }
 
 /// Provider for schedules filtered by selected date.
-final schedulesForSelectedDateProvider =
-    FutureProvider<List<ScheduleModel>>((ref) async {
+final schedulesForSelectedDateProvider = FutureProvider<List<ScheduleModel>>((
+  ref,
+) async {
   final selectedDate = ref.watch(selectedDateProvider);
   final repository = ref.watch(scheduleRepositoryProvider);
   return repository.getSchedulesByDate(selectedDate);
 });
 
 /// Schedule list state notifier using Riverpod 3.x Notifier.
-class ScheduleListNotifier
-    extends Notifier<AsyncValue<List<ScheduleModel>>> {
+class ScheduleListNotifier extends Notifier<AsyncValue<List<ScheduleModel>>> {
   @override
   AsyncValue<List<ScheduleModel>> build() => const AsyncValue.loading();
 
   Future<void> loadSchedules() async {
     state = const AsyncValue.loading();
     try {
-      final schedules =
-          await ref.read(scheduleRepositoryProvider).getAllSchedules();
+      final schedules = await ref
+          .read(scheduleRepositoryProvider)
+          .getAllSchedules();
       state = AsyncValue.data(schedules);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -78,8 +80,9 @@ class ScheduleListNotifier
   Future<void> loadByDate(DateTime date) async {
     state = const AsyncValue.loading();
     try {
-      final schedules =
-          await ref.read(scheduleRepositoryProvider).getSchedulesByDate(date);
+      final schedules = await ref
+          .read(scheduleRepositoryProvider)
+          .getSchedulesByDate(date);
       state = AsyncValue.data(schedules);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -88,7 +91,7 @@ class ScheduleListNotifier
 }
 
 /// NotifierProvider for schedule list.
-final scheduleListNotifierProvider = NotifierProvider<ScheduleListNotifier,
-    AsyncValue<List<ScheduleModel>>>(() {
-  return ScheduleListNotifier();
-});
+final scheduleListNotifierProvider =
+    NotifierProvider<ScheduleListNotifier, AsyncValue<List<ScheduleModel>>>(() {
+      return ScheduleListNotifier();
+    });

@@ -10,8 +10,9 @@ final membershipRepositoryProvider = Provider<MembershipRepository>((ref) {
 });
 
 /// Provider for all packages.
-final allPackagesProvider =
-    FutureProvider<List<MembershipPackageModel>>((ref) async {
+final allPackagesProvider = FutureProvider<List<MembershipPackageModel>>((
+  ref,
+) async {
   final repository = ref.watch(membershipRepositoryProvider);
   return repository.getAllPackages();
 });
@@ -19,33 +20,39 @@ final allPackagesProvider =
 /// Provider for a single package by ID.
 final packageByIdProvider =
     FutureProvider.family<MembershipPackageModel?, String>((ref, id) async {
-  final repository = ref.watch(membershipRepositoryProvider);
-  return repository.getPackageById(id);
-});
+      final repository = ref.watch(membershipRepositoryProvider);
+      return repository.getPackageById(id);
+    });
 
 /// Provider for popular package.
-final popularPackageProvider =
-    FutureProvider<MembershipPackageModel?>((ref) async {
+final popularPackageProvider = FutureProvider<MembershipPackageModel?>((
+  ref,
+) async {
   final repository = ref.watch(membershipRepositoryProvider);
   return repository.getPopularPackage();
 });
 
 /// Provider for active membership.
-final activeMembershipProvider =
-    FutureProvider<MembershipPackageModel?>((ref) async {
+final activeMembershipProvider = FutureProvider<MembershipPackageModel?>((
+  ref,
+) async {
   final repository = ref.watch(membershipRepositoryProvider);
   return repository.getActiveMembership();
 });
 
 /// Membership state notifier using Riverpod 3.x Notifier.
-class MembershipNotifier extends Notifier<AsyncValue<List<MembershipPackageModel>>> {
+class MembershipNotifier
+    extends Notifier<AsyncValue<List<MembershipPackageModel>>> {
   @override
-  AsyncValue<List<MembershipPackageModel>> build() => const AsyncValue.loading();
+  AsyncValue<List<MembershipPackageModel>> build() =>
+      const AsyncValue.loading();
 
   Future<void> loadPackages() async {
     state = const AsyncValue.loading();
     try {
-      final packages = await ref.read(membershipRepositoryProvider).getAllPackages();
+      final packages = await ref
+          .read(membershipRepositoryProvider)
+          .getAllPackages();
       state = AsyncValue.data(packages);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -63,7 +70,10 @@ class MembershipNotifier extends Notifier<AsyncValue<List<MembershipPackageModel
 }
 
 /// NotifierProvider for membership state.
-final membershipNotifierProvider = NotifierProvider<MembershipNotifier,
-    AsyncValue<List<MembershipPackageModel>>>(() {
-  return MembershipNotifier();
-});
+final membershipNotifierProvider =
+    NotifierProvider<
+      MembershipNotifier,
+      AsyncValue<List<MembershipPackageModel>>
+    >(() {
+      return MembershipNotifier();
+    });

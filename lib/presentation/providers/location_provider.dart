@@ -10,8 +10,9 @@ final locationRepositoryProvider = Provider<LocationRepository>((ref) {
 });
 
 /// Provider for all locations.
-final allLocationsProvider =
-    FutureProvider<List<StudioLocationModel>>((ref) async {
+final allLocationsProvider = FutureProvider<List<StudioLocationModel>>((
+  ref,
+) async {
   final repository = ref.watch(locationRepositoryProvider);
   return repository.getAllLocations();
 });
@@ -19,13 +20,12 @@ final allLocationsProvider =
 /// Provider for a single location by ID.
 final locationByIdProvider =
     FutureProvider.family<StudioLocationModel?, String>((ref, id) async {
-  final repository = ref.watch(locationRepositoryProvider);
-  return repository.getLocationById(id);
-});
+      final repository = ref.watch(locationRepositoryProvider);
+      return repository.getLocationById(id);
+    });
 
 /// Provider for main location.
-final mainLocationProvider =
-    FutureProvider<StudioLocationModel?>((ref) async {
+final mainLocationProvider = FutureProvider<StudioLocationModel?>((ref) async {
   final repository = ref.watch(locationRepositoryProvider);
   return repository.getMainLocation();
 });

@@ -17,23 +17,27 @@ final allClassesProvider = FutureProvider<List<YogaClassModel>>((ref) async {
 });
 
 /// Provider for featured classes.
-final featuredClassesProvider =
-    FutureProvider<List<YogaClassModel>>((ref) async {
+final featuredClassesProvider = FutureProvider<List<YogaClassModel>>((
+  ref,
+) async {
   final repository = ref.watch(classRepositoryProvider);
   return repository.getFeaturedClasses();
 });
 
 /// Provider for a single class by ID.
-final classByIdProvider =
-    FutureProvider.family<YogaClassModel?, String>((ref, id) async {
+final classByIdProvider = FutureProvider.family<YogaClassModel?, String>((
+  ref,
+  id,
+) async {
   final repository = ref.watch(classRepositoryProvider);
   return repository.getClassById(id);
 });
 
 /// State for search query.
-final classSearchQueryProvider = NotifierProvider<ClassSearchQueryNotifier, String>(
-  ClassSearchQueryNotifier.new,
-);
+final classSearchQueryProvider =
+    NotifierProvider<ClassSearchQueryNotifier, String>(
+      ClassSearchQueryNotifier.new,
+    );
 
 class ClassSearchQueryNotifier extends Notifier<String> {
   @override
@@ -49,8 +53,9 @@ class ClassSearchQueryNotifier extends Notifier<String> {
 }
 
 /// Provider for searched classes.
-final searchedClassesProvider =
-    FutureProvider<List<YogaClassModel>>((ref) async {
+final searchedClassesProvider = FutureProvider<List<YogaClassModel>>((
+  ref,
+) async {
   final query = ref.watch(classSearchQueryProvider);
   if (query.isEmpty) {
     return ref.watch(allClassesProvider.future);
@@ -60,9 +65,10 @@ final searchedClassesProvider =
 });
 
 /// State for selected category.
-final selectedCategoryProvider = NotifierProvider<SelectedCategoryNotifier, ClassCategory?>(
-  SelectedCategoryNotifier.new,
-);
+final selectedCategoryProvider =
+    NotifierProvider<SelectedCategoryNotifier, ClassCategory?>(
+      SelectedCategoryNotifier.new,
+    );
 
 class SelectedCategoryNotifier extends Notifier<ClassCategory?> {
   @override
@@ -78,8 +84,9 @@ class SelectedCategoryNotifier extends Notifier<ClassCategory?> {
 }
 
 /// Provider for filtered classes by category.
-final filteredClassesByCategoryProvider =
-    FutureProvider<List<YogaClassModel>>((ref) async {
+final filteredClassesByCategoryProvider = FutureProvider<List<YogaClassModel>>((
+  ref,
+) async {
   final category = ref.watch(selectedCategoryProvider);
   if (category == null) {
     return ref.watch(allClassesProvider.future);
@@ -120,5 +127,5 @@ class ClassListNotifier extends Notifier<AsyncValue<List<YogaClassModel>>> {
 /// NotifierProvider for class list.
 final classListNotifierProvider =
     NotifierProvider<ClassListNotifier, AsyncValue<List<YogaClassModel>>>(() {
-  return ClassListNotifier();
-});
+      return ClassListNotifier();
+    });

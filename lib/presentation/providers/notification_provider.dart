@@ -10,18 +10,20 @@ final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
 });
 
 /// Provider for all notifications.
-final allNotificationsProvider =
-    FutureProvider<List<NotificationItemModel>>((ref) async {
+final allNotificationsProvider = FutureProvider<List<NotificationItemModel>>((
+  ref,
+) async {
   final repository = ref.watch(notificationRepositoryProvider);
   return repository.getAllNotifications();
 });
 
 /// Provider for unread notifications.
-final unreadNotificationsProvider =
-    FutureProvider<List<NotificationItemModel>>((ref) async {
-  final repository = ref.watch(notificationRepositoryProvider);
-  return repository.getUnreadNotifications();
-});
+final unreadNotificationsProvider = FutureProvider<List<NotificationItemModel>>(
+  (ref) async {
+    final repository = ref.watch(notificationRepositoryProvider);
+    return repository.getUnreadNotifications();
+  },
+);
 
 /// Provider for unread count.
 final unreadCountProvider = FutureProvider<int>((ref) async {
@@ -30,15 +32,17 @@ final unreadCountProvider = FutureProvider<int>((ref) async {
 });
 
 /// Notification state notifier using Riverpod 3.x Notifier.
-class NotificationNotifier extends Notifier<AsyncValue<List<NotificationItemModel>>> {
+class NotificationNotifier
+    extends Notifier<AsyncValue<List<NotificationItemModel>>> {
   @override
   AsyncValue<List<NotificationItemModel>> build() => const AsyncValue.loading();
 
   Future<void> loadNotifications() async {
     state = const AsyncValue.loading();
     try {
-      final notifications =
-          await ref.read(notificationRepositoryProvider).getAllNotifications();
+      final notifications = await ref
+          .read(notificationRepositoryProvider)
+          .getAllNotifications();
       state = AsyncValue.data(notifications);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -65,7 +69,8 @@ class NotificationNotifier extends Notifier<AsyncValue<List<NotificationItemMode
 
   Future<void> deleteNotification(String notificationId) async {
     try {
-      await ref.read(notificationRepositoryProvider)
+      await ref
+          .read(notificationRepositoryProvider)
           .deleteNotification(notificationId);
       await loadNotifications();
     } catch (e, st) {
@@ -75,7 +80,10 @@ class NotificationNotifier extends Notifier<AsyncValue<List<NotificationItemMode
 }
 
 /// NotifierProvider for notification state.
-final notificationNotifierProvider = NotifierProvider<NotificationNotifier,
-    AsyncValue<List<NotificationItemModel>>>(() {
-  return NotificationNotifier();
-});
+final notificationNotifierProvider =
+    NotifierProvider<
+      NotificationNotifier,
+      AsyncValue<List<NotificationItemModel>>
+    >(() {
+      return NotificationNotifier();
+    });

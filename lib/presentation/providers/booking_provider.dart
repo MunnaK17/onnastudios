@@ -16,7 +16,9 @@ final userBookingsProvider = FutureProvider<List<BookingModel>>((ref) async {
 });
 
 /// Provider for upcoming bookings.
-final upcomingBookingsProvider = FutureProvider<List<BookingModel>>((ref) async {
+final upcomingBookingsProvider = FutureProvider<List<BookingModel>>((
+  ref,
+) async {
   final repository = ref.watch(bookingRepositoryProvider);
   return repository.getUpcomingBookings();
 });
@@ -28,8 +30,10 @@ final pastBookingsProvider = FutureProvider<List<BookingModel>>((ref) async {
 });
 
 /// Provider for a single booking by ID.
-final bookingByIdProvider =
-    FutureProvider.family<BookingModel?, String>((ref, id) async {
+final bookingByIdProvider = FutureProvider.family<BookingModel?, String>((
+  ref,
+  id,
+) async {
   final repository = ref.watch(bookingRepositoryProvider);
   return repository.getBookingById(id);
 });
@@ -42,7 +46,9 @@ class BookingNotifier extends Notifier<AsyncValue<List<BookingModel>>> {
   Future<void> loadBookings() async {
     state = const AsyncValue.loading();
     try {
-      final bookings = await ref.read(bookingRepositoryProvider).getUserBookings();
+      final bookings = await ref
+          .read(bookingRepositoryProvider)
+          .getUserBookings();
       state = AsyncValue.data(bookings);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -54,10 +60,9 @@ class BookingNotifier extends Notifier<AsyncValue<List<BookingModel>>> {
     required String classId,
   }) async {
     try {
-      await ref.read(bookingRepositoryProvider).createBooking(
-        scheduleId: scheduleId,
-        classId: classId,
-      );
+      await ref
+          .read(bookingRepositoryProvider)
+          .createBooking(scheduleId: scheduleId, classId: classId);
       await loadBookings();
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -77,5 +82,5 @@ class BookingNotifier extends Notifier<AsyncValue<List<BookingModel>>> {
 /// NotifierProvider for booking state.
 final bookingNotifierProvider =
     NotifierProvider<BookingNotifier, AsyncValue<List<BookingModel>>>(() {
-  return BookingNotifier();
-});
+      return BookingNotifier();
+    });

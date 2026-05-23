@@ -2,7 +2,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../presentation/navigation/main_app_shell.dart';
 import '../../presentation/screens/foundation_placeholder_screen.dart';
-import '../../presentation/screens/foundation_preview_screen.dart';
+import '../../presentation/screens/home/home_screen.dart';
 import '../../presentation/screens/placeholder_content.dart';
 import 'app_route_names.dart';
 import 'app_routes.dart';
@@ -50,7 +50,7 @@ final appRouter = GoRouter(
         GoRoute(
           path: AppRoutes.home,
           name: AppRouteNames.home,
-          builder: (context, state) => const FoundationPreviewScreen(),
+          builder: (context, state) => const HomeScreen(),
         ),
         GoRoute(
           path: AppRoutes.classes,

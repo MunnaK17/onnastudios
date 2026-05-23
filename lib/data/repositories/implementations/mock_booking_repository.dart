@@ -5,8 +5,9 @@ import '../interfaces/booking_repository.dart';
 
 /// Mock implementation of BookingRepository.
 class MockBookingRepository implements BookingRepository {
-  final List<BookingModel> _bookings =
-      List<BookingModel>.from(MockOnnaData.bookings);
+  final List<BookingModel> _bookings = List<BookingModel>.from(
+    MockOnnaData.bookings,
+  );
 
   @override
   Future<List<BookingModel>> getUserBookings() async {
@@ -27,18 +28,18 @@ class MockBookingRepository implements BookingRepository {
   @override
   Future<List<BookingModel>> getUpcomingBookings() async {
     await Future.delayed(const Duration(milliseconds: 100));
-    return _bookings
-        .where((b) => b.status == BookingStatus.upcoming)
-        .toList();
+    return _bookings.where((b) => b.status == BookingStatus.upcoming).toList();
   }
 
   @override
   Future<List<BookingModel>> getPastBookings() async {
     await Future.delayed(const Duration(milliseconds: 100));
     return _bookings
-        .where((b) =>
-            b.status == BookingStatus.completed ||
-            b.status == BookingStatus.cancelled)
+        .where(
+          (b) =>
+              b.status == BookingStatus.completed ||
+              b.status == BookingStatus.cancelled,
+        )
         .toList();
   }
 
@@ -81,8 +82,8 @@ class MockBookingRepository implements BookingRepository {
   @override
   Future<bool> hasBookedSchedule(String scheduleId) async {
     await Future.delayed(const Duration(milliseconds: 50));
-    return _bookings.any((b) =>
-        b.scheduleId == scheduleId &&
-        b.status == BookingStatus.upcoming);
+    return _bookings.any(
+      (b) => b.scheduleId == scheduleId && b.status == BookingStatus.upcoming,
+    );
   }
 }

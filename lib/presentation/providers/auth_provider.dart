@@ -25,15 +25,11 @@ class AuthNotifier extends Notifier<bool> {
   @override
   bool build() => false;
 
-  Future<void> login({
-    required String email,
-    required String password,
-  }) async {
+  Future<void> login({required String email, required String password}) async {
     state = true;
-    await ref.read(authRepositoryProvider).login(
-      email: email,
-      password: password,
-    );
+    await ref
+        .read(authRepositoryProvider)
+        .login(email: email, password: password);
   }
 
   Future<void> logout() async {

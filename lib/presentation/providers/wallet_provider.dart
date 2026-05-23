@@ -16,19 +16,22 @@ final remainingCreditsProvider = FutureProvider<int>((ref) async {
 });
 
 /// Provider for transaction history.
-final transactionHistoryProvider =
-    FutureProvider<List<WalletTransactionModel>>((ref) async {
-  final repository = ref.watch(walletRepositoryProvider);
-  return repository.getTransactionHistory();
-});
+final transactionHistoryProvider = FutureProvider<List<WalletTransactionModel>>(
+  (ref) async {
+    final repository = ref.watch(walletRepositoryProvider);
+    return repository.getTransactionHistory();
+  },
+);
 
 /// Provider for recent transactions with limit.
 final recentTransactionsProvider =
-    FutureProvider.family<List<WalletTransactionModel>, int>(
-        (ref, limit) async {
-  final repository = ref.watch(walletRepositoryProvider);
-  return repository.getRecentTransactions(limit: limit);
-});
+    FutureProvider.family<List<WalletTransactionModel>, int>((
+      ref,
+      limit,
+    ) async {
+      final repository = ref.watch(walletRepositoryProvider);
+      return repository.getRecentTransactions(limit: limit);
+    });
 
 /// Wallet summary state.
 class WalletSummary {
@@ -68,11 +71,13 @@ class WalletNotifier extends Notifier<AsyncValue<WalletSummary>> {
       final credits = await repository.getRemainingCredits();
       final transactions = await repository.getRecentTransactions(limit: 5);
 
-      state = AsyncValue.data(WalletSummary(
-        remainingCredits: credits,
-        recentTransactions: transactions,
-        hasEnoughCredits: credits > 0,
-      ));
+      state = AsyncValue.data(
+        WalletSummary(
+          remainingCredits: credits,
+          recentTransactions: transactions,
+          hasEnoughCredits: credits > 0,
+        ),
+      );
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
@@ -80,7 +85,9 @@ class WalletNotifier extends Notifier<AsyncValue<WalletSummary>> {
 
   Future<void> deductCredits(int amount, String description) async {
     try {
-      await ref.read(walletRepositoryProvider).deductCredits(amount, description);
+      await ref
+          .read(walletRepositoryProvider)
+          .deductCredits(amount, description);
       await loadWallet();
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -100,5 +107,5 @@ class WalletNotifier extends Notifier<AsyncValue<WalletSummary>> {
 /// NotifierProvider for wallet state.
 final walletNotifierProvider =
     NotifierProvider<WalletNotifier, AsyncValue<WalletSummary>>(() {
-  return WalletNotifier();
-});
+      return WalletNotifier();
+    });

@@ -37,12 +37,14 @@ class ProfileNotifier extends Notifier<AsyncValue<UserModel?>> {
     String? profilePhoto,
   }) async {
     try {
-      final updatedProfile = await ref.read(profileRepositoryProvider).updateProfile(
-        fullName: fullName,
-        email: email,
-        phone: phone,
-        profilePhoto: profilePhoto,
-      );
+      final updatedProfile = await ref
+          .read(profileRepositoryProvider)
+          .updateProfile(
+            fullName: fullName,
+            email: email,
+            phone: phone,
+            profilePhoto: profilePhoto,
+          );
       state = AsyncValue.data(updatedProfile);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -62,5 +64,5 @@ class ProfileNotifier extends Notifier<AsyncValue<UserModel?>> {
 /// NotifierProvider for profile state.
 final profileNotifierProvider =
     NotifierProvider<ProfileNotifier, AsyncValue<UserModel?>>(() {
-  return ProfileNotifier();
-});
+      return ProfileNotifier();
+    });

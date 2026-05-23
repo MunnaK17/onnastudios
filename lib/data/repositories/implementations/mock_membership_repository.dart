@@ -26,8 +26,7 @@ class MockMembershipRepository implements MembershipRepository {
   Future<MembershipPackageModel?> getPopularPackage() async {
     await Future.delayed(const Duration(milliseconds: 50));
     try {
-      return MockOnnaData.membershipPackages
-          .firstWhere((p) => p.isPopular);
+      return MockOnnaData.membershipPackages.firstWhere((p) => p.isPopular);
     } catch (_) {
       return null;
     }

@@ -33,9 +33,7 @@ class MockScheduleRepository implements ScheduleRepository {
   @override
   Future<List<ScheduleModel>> getSchedulesByClassId(String classId) async {
     await Future.delayed(const Duration(milliseconds: 100));
-    return MockOnnaData.schedules
-        .where((s) => s.classId == classId)
-        .toList();
+    return MockOnnaData.schedules.where((s) => s.classId == classId).toList();
   }
 
   @override
@@ -63,8 +61,6 @@ class MockScheduleRepository implements ScheduleRepository {
   @override
   Future<List<ScheduleModel>> getAvailableSchedules() async {
     await Future.delayed(const Duration(milliseconds: 100));
-    return MockOnnaData.schedules
-        .where((s) => s.availableSlots > 0)
-        .toList();
+    return MockOnnaData.schedules.where((s) => s.availableSlots > 0).toList();
   }
 }
