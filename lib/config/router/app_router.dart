@@ -2,12 +2,13 @@ import 'package:go_router/go_router.dart';
 
 import '../../presentation/navigation/main_app_shell.dart';
 import '../../presentation/screens/foundation_placeholder_screen.dart';
+import '../../presentation/screens/foundation_preview_screen.dart';
 import '../../presentation/screens/placeholder_content.dart';
 import 'app_route_names.dart';
 import 'app_routes.dart';
 
 final appRouter = GoRouter(
-  initialLocation: AppRoutes.splash,
+  initialLocation: AppRoutes.home,
   routes: [
     GoRoute(
       path: AppRoutes.splash,
@@ -49,10 +50,7 @@ final appRouter = GoRouter(
         GoRoute(
           path: AppRoutes.home,
           name: AppRouteNames.home,
-          builder: (context, state) => const PlaceholderContent(
-            title: 'Home',
-            subtitle: 'Home tab placeholder.',
-          ),
+          builder: (context, state) => const FoundationPreviewScreen(),
         ),
         GoRoute(
           path: AppRoutes.classes,
