@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../presentation/navigation/main_app_shell.dart';
 import '../../presentation/screens/foundation_placeholder_screen.dart';
+import '../../presentation/screens/schedule/schedule_screen.dart';
 import '../../presentation/screens/class_detail/class_detail_screen.dart';
 import '../../presentation/screens/classes/classes_screen.dart';
 import '../../presentation/screens/home/home_screen.dart';
@@ -62,10 +63,7 @@ final appRouter = GoRouter(
         GoRoute(
           path: AppRoutes.schedule,
           name: AppRouteNames.schedule,
-          builder: (context, state) => const PlaceholderContent(
-            title: 'Schedule',
-            subtitle: 'Timetable tab placeholder.',
-          ),
+          builder: (context, state) => const ScheduleScreen(),
         ),
         GoRoute(
           path: AppRoutes.package,
