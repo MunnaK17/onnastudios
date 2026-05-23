@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../presentation/navigation/main_app_shell.dart';
 import '../../presentation/screens/foundation_placeholder_screen.dart';
+import '../../presentation/screens/class_detail/class_detail_screen.dart';
 import '../../presentation/screens/classes/classes_screen.dart';
 import '../../presentation/screens/home/home_screen.dart';
 import '../../presentation/screens/placeholder_content.dart';
@@ -87,10 +88,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.classDetail,
       name: AppRouteNames.classDetail,
-      builder: (context, state) => FoundationPlaceholderScreen(
-        title: 'Class Detail',
-        subtitle: 'Class id: ${state.pathParameters['id']}',
-      ),
+      builder: (context, state) {
+        final classId = state.pathParameters['id'] ?? '';
+        return ClassDetailScreen(classId: classId);
+      },
     ),
     GoRoute(
       path: AppRoutes.booking,
