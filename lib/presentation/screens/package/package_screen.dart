@@ -577,102 +577,110 @@ class _ConfirmContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Handle
-        Container(
-          width: 40,
-          height: 4,
-          decoration: BoxDecoration(
-            color: AppColors.surfaceVariant,
-            borderRadius: BorderRadius.circular(2),
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle
+          Container(
+            width: 40,
+            height: 4,
+            margin: const EdgeInsets.only(top: AppSpacing.md),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceVariant,
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
-        ),
-        const SizedBox(height: AppSpacing.xl),
-        // Title
-        Text('Confirm Purchase', style: AppTypography.h3),
-        const SizedBox(height: AppSpacing.lg),
-        // Package Summary
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            color: AppColors.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(AppRadius.md),
+          const SizedBox(height: AppSpacing.lg),
+          // Title
+          Text('Confirm Purchase', style: AppTypography.h3),
+          const SizedBox(height: AppSpacing.md),
+          // Package Summary
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Package', style: AppTypography.bodySm),
+                    Text(package.name, style: AppTypography.bodySm),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Credits', style: AppTypography.bodySm),
+                    Text(
+                      package.hasUnlimitedCredits
+                          ? 'Unlimited'
+                          : '${package.credits}',
+                      style: AppTypography.bodySm,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Validity', style: AppTypography.bodySm),
+                    Text(
+                      '${package.validityDays} days',
+                      style: AppTypography.bodySm,
+                    ),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                  child: Divider(color: AppColors.surfaceVariant),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Total', style: AppTypography.bodyMd),
+                    Text(
+                      '\$${package.price.toStringAsFixed(2)}',
+                      style: AppTypography.bodyMd.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-          child: Column(
+          const SizedBox(height: AppSpacing.lg),
+          // Buttons
+          Row(
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Package', style: AppTypography.bodyMd),
-                  Text(package.name, style: AppTypography.bodyMd),
-                ],
+              Expanded(
+                child: AppButton(
+                  label: 'Cancel',
+                  variant: AppButtonVariant.ghost,
+                  onPressed: () => Navigator.pop(context),
+                  isExpanded: true,
+                ),
               ),
-              const SizedBox(height: AppSpacing.sm),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Credits', style: AppTypography.bodyMd),
-                  Text(
-                    package.hasUnlimitedCredits
-                        ? 'Unlimited'
-                        : '${package.credits}',
-                    style: AppTypography.bodyMd,
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Validity', style: AppTypography.bodyMd),
-                  Text(
-                    '${package.validityDays} days',
-                    style: AppTypography.bodyMd,
-                  ),
-                ],
-              ),
-              const Divider(height: AppSpacing.lg),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Total', style: AppTypography.h3),
-                  Text(
-                    '\$${package.price.toStringAsFixed(2)}',
-                    style: AppTypography.h3,
-                  ),
-                ],
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: AppButton(
+                  label: isPurchasing ? '...' : 'Confirm',
+                  onPressed: isPurchasing ? null : onConfirm,
+                  isLoading: isPurchasing,
+                  isExpanded: true,
+                ),
               ),
             ],
           ),
-        ),
-        const SizedBox(height: AppSpacing.xl),
-        // Buttons
-        Row(
-          children: [
-            Expanded(
-              child: AppButton(
-                label: 'Cancel',
-                variant: AppButtonVariant.ghost,
-                onPressed: () => Navigator.pop(context),
-                isExpanded: true,
-              ),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: AppButton(
-                label: isPurchasing ? 'Processing...' : 'Confirm',
-                onPressed: isPurchasing ? null : onConfirm,
-                isLoading: isPurchasing,
-                isExpanded: true,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.md),
-      ],
+          const SizedBox(height: AppSpacing.md),
+        ],
+      ),
     );
   }
 }
@@ -684,66 +692,69 @@ class _SuccessContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Handle
-        Container(
-          width: 40,
-          height: 4,
-          decoration: BoxDecoration(
-            color: AppColors.surfaceVariant,
-            borderRadius: BorderRadius.circular(2),
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle
+          Container(
+            width: 40,
+            height: 4,
+            margin: const EdgeInsets.only(top: AppSpacing.md),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceVariant,
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
-        ),
-        const SizedBox(height: AppSpacing.xl),
-        // Success Icon
-        Container(
-          width: 64,
-          height: 64,
-          decoration: BoxDecoration(
-            color: AppColors.secondaryContainer,
-            shape: BoxShape.circle,
+          const SizedBox(height: AppSpacing.lg),
+          // Success Icon
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: AppColors.secondaryContainer,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.check,
+              size: 32,
+              color: AppColors.onSecondaryContainer,
+            ),
           ),
-          child: Icon(
-            Icons.check,
-            size: 32,
-            color: AppColors.onSecondaryContainer,
+          const SizedBox(height: AppSpacing.lg),
+          // Title
+          Text('Package Purchased!', style: AppTypography.h3),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'Your ${package.name} package is now active.',
+            style: AppTypography.bodyMd.copyWith(
+              color: AppColors.onSurfaceVariant,
+            ),
+            textAlign: TextAlign.center,
           ),
-        ),
-        const SizedBox(height: AppSpacing.lg),
-        // Title
-        Text('Package Purchased!', style: AppTypography.h3),
-        const SizedBox(height: AppSpacing.sm),
-        Text(
-          'Your ${package.name} package is now active.',
-          style: AppTypography.bodyMd.copyWith(
-            color: AppColors.onSurfaceVariant,
+          const SizedBox(height: AppSpacing.lg),
+          // Buttons
+          AppButton(
+            label: 'View My Credits',
+            onPressed: () {
+              Navigator.pop(context);
+              context.go(AppRoutes.wallet);
+            },
+            isExpanded: true,
           ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: AppSpacing.xl),
-        // Buttons
-        AppButton(
-          label: 'View My Credits',
-          onPressed: () {
-            Navigator.pop(context);
-            context.go(AppRoutes.wallet);
-          },
-          isExpanded: true,
-        ),
-        const SizedBox(height: AppSpacing.md),
-        AppButton(
-          label: 'Back to Home',
-          variant: AppButtonVariant.text,
-          onPressed: () {
-            Navigator.pop(context);
-            context.go(AppRoutes.home);
-          },
-          isExpanded: true,
-        ),
-        const SizedBox(height: AppSpacing.md),
-      ],
+          const SizedBox(height: AppSpacing.sm),
+          AppButton(
+            label: 'Back to Home',
+            variant: AppButtonVariant.text,
+            onPressed: () {
+              Navigator.pop(context);
+              context.go(AppRoutes.home);
+            },
+            isExpanded: true,
+          ),
+          const SizedBox(height: AppSpacing.md),
+        ],
+      ),
     );
   }
 }
