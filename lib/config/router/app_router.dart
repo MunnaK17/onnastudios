@@ -4,6 +4,7 @@ import '../../presentation/navigation/main_app_shell.dart';
 import '../../presentation/screens/foundation_placeholder_screen.dart';
 import '../../presentation/screens/booking/booking_flow_screen.dart';
 import '../../presentation/screens/booking/booking_confirmation_screen.dart';
+import '../../presentation/screens/package/package_screen.dart';
 import '../../presentation/screens/schedule/schedule_screen.dart';
 import '../../presentation/screens/class_detail/class_detail_screen.dart';
 import '../../presentation/screens/classes/classes_screen.dart';
@@ -70,10 +71,7 @@ final appRouter = GoRouter(
         GoRoute(
           path: AppRoutes.package,
           name: AppRouteNames.package,
-          builder: (context, state) => const PlaceholderContent(
-            title: 'Package',
-            subtitle: 'Membership tab placeholder.',
-          ),
+          builder: (context, state) => const PackageScreen(),
         ),
         GoRoute(
           path: AppRoutes.profile,
