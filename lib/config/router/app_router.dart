@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../presentation/navigation/main_app_shell.dart';
 import '../../presentation/screens/foundation_placeholder_screen.dart';
+import '../../presentation/screens/booking/booking_flow_screen.dart';
 import '../../presentation/screens/schedule/schedule_screen.dart';
 import '../../presentation/screens/class_detail/class_detail_screen.dart';
 import '../../presentation/screens/classes/classes_screen.dart';
@@ -94,10 +95,11 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.booking,
       name: AppRouteNames.booking,
-      builder: (context, state) => const FoundationPlaceholderScreen(
-        title: 'Booking Flow',
-        subtitle: 'Booking flow placeholder.',
-      ),
+      builder: (context, state) {
+        final scheduleId = state.uri.queryParameters['scheduleId'];
+        final classId = state.uri.queryParameters['classId'];
+        return BookingFlowScreen(scheduleId: scheduleId, classId: classId);
+      },
     ),
     GoRoute(
       path: AppRoutes.bookingConfirmation,
