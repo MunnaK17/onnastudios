@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../presentation/navigation/main_app_shell.dart';
 import '../../presentation/screens/foundation_placeholder_screen.dart';
 import '../../presentation/screens/booking/booking_flow_screen.dart';
+import '../../presentation/screens/booking/booking_confirmation_screen.dart';
 import '../../presentation/screens/schedule/schedule_screen.dart';
 import '../../presentation/screens/class_detail/class_detail_screen.dart';
 import '../../presentation/screens/classes/classes_screen.dart';
@@ -104,10 +105,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.bookingConfirmation,
       name: AppRouteNames.bookingConfirmation,
-      builder: (context, state) => const FoundationPlaceholderScreen(
-        title: 'Booking Confirmation',
-        subtitle: 'QR confirmation placeholder.',
-      ),
+      builder: (context, state) {
+        final bookingId = state.uri.queryParameters['bookingId'];
+        return BookingConfirmationScreen(bookingId: bookingId);
+      },
     ),
     GoRoute(
       path: AppRoutes.bookingHistory,
