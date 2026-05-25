@@ -10,6 +10,7 @@ import '../../presentation/screens/schedule/schedule_screen.dart';
 import '../../presentation/screens/class_detail/class_detail_screen.dart';
 import '../../presentation/screens/classes/classes_screen.dart';
 import '../../presentation/screens/home/home_screen.dart';
+import '../../presentation/screens/notification/notification_screen.dart';
 import '../../presentation/screens/profile/profile_screen.dart';
 import '../../presentation/screens/wallet/wallet_screen.dart';
 import 'app_route_names.dart';
@@ -136,10 +137,7 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.notification,
       name: AppRouteNames.notification,
-      builder: (context, state) => const FoundationPlaceholderScreen(
-        title: 'Notifications',
-        subtitle: 'Studio updates placeholder.',
-      ),
+      builder: (context, state) => const NotificationScreen(),
     ),
   ],
 );
