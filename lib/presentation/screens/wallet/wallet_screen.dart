@@ -53,10 +53,10 @@ class WalletScreen extends ConsumerWidget {
             const SizedBox(height: AppSpacing.lg),
             // Header
             const _HeaderSection(),
-            const SizedBox(height: AppSpacing.xxl),
+            const SizedBox(height: AppSpacing.xl),
             // Wallet Balance Section
             const _WalletBalanceSection(),
-            const SizedBox(height: AppSpacing.xxl),
+            const SizedBox(height: AppSpacing.xl),
             // Transactions Section
             const _TransactionsSection(),
             const SizedBox(height: AppSpacing.lg),
@@ -93,28 +93,27 @@ class _WalletBalanceSection extends ConsumerWidget {
           // Balance Card
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(AppSpacing.xl),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.xl,
+            ),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  AppColors.tertiaryContainer,
-                  AppColors.secondaryContainer,
-                ],
-              ),
-              borderRadius: BorderRadius.circular(AppRadius.card),
-              boxShadow: AppShadows.ambient,
+              color: AppColors.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(AppRadius.xl),
+              border: Border.all(color: AppColors.surfaceVariant),
+              boxShadow: AppShadows.subtle,
             ),
             child: Column(
               children: [
+                // Label
                 Text(
-                  'Current Balance',
+                  'Available Credits',
                   style: AppTypography.labelCaps.copyWith(
-                    color: AppColors.onTertiaryFixed,
+                    color: AppColors.onSurfaceVariant,
                   ),
                 ),
                 const SizedBox(height: AppSpacing.sm),
+                // Balance
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -124,30 +123,48 @@ class _WalletBalanceSection extends ConsumerWidget {
                       data: (wallet) => Text(
                         '${wallet.remainingCredits}',
                         style: AppTypography.h1.copyWith(
-                          color: AppColors.onTertiaryFixed,
-                          fontSize: 56,
+                          color: AppColors.primary,
+                          fontSize: 48,
                         ),
                       ),
                       loading: () => Container(
-                        width: 60,
-                        height: 56,
-                        color: AppColors.onTertiaryFixed.withAlpha(51),
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceContainerHigh,
+                          borderRadius: BorderRadius.circular(AppRadius.sm),
+                        ),
                       ),
-                      error: (_, __) => Text(
+                      error: (e, st) => Text(
                         '--',
                         style: AppTypography.h1.copyWith(
-                          color: AppColors.onTertiaryFixed,
+                          color: AppColors.primary,
+                          fontSize: 48,
                         ),
                       ),
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     Text(
                       'Credits',
-                      style: AppTypography.h3.copyWith(
-                        color: AppColors.onTertiaryFixed.withAlpha(179),
+                      style: AppTypography.bodyLg.copyWith(
+                        color: AppColors.onSurfaceVariant,
                       ),
                     ),
                   ],
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                // Status Indicator
+                walletAsync.when(
+                  data: (wallet) => _CreditStatusBadge(
+                    isEnough: wallet.hasEnoughCredits,
+                    remaining: wallet.remainingCredits,
+                  ),
+                  loading: () =>
+                      const _CreditStatusBadge(isEnough: true, remaining: null),
+                  error: (e, st) => const _CreditStatusBadge(
+                    isEnough: false,
+                    remaining: null,
+                  ),
                 ),
               ],
             ),
@@ -157,32 +174,33 @@ class _WalletBalanceSection extends ConsumerWidget {
           walletAsync.when(
             data: (wallet) {
               if (wallet.remainingCredits < 3 && wallet.remainingCredits > 0) {
-                return Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.only(bottom: AppSpacing.lg),
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  decoration: BoxDecoration(
-                    color: AppColors.errorContainer,
-                    borderRadius: BorderRadius.circular(AppRadius.md),
-                    border: Border.all(color: AppColors.error.withAlpha(51)),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.warning_amber_rounded,
-                        color: AppColors.onErrorContainer,
-                        size: 20,
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: Text(
-                          'Your credits are running low. Consider purchasing more.',
-                          style: AppTypography.bodySm.copyWith(
-                            color: AppColors.onErrorContainer,
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    decoration: BoxDecoration(
+                      color: AppColors.errorContainer,
+                      borderRadius: BorderRadius.circular(AppRadius.md),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.warning_amber_rounded,
+                          color: AppColors.onErrorContainer,
+                          size: 20,
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: Text(
+                            'Your credits are running low. Consider purchasing more.',
+                            style: AppTypography.bodySm.copyWith(
+                              color: AppColors.onErrorContainer,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 );
               }
@@ -194,10 +212,56 @@ class _WalletBalanceSection extends ConsumerWidget {
           // Buy More Credits Button
           AppButton(
             label: 'Buy More Credits',
-            variant: AppButtonVariant.primary,
+            variant: AppButtonVariant.secondary,
             onPressed: () => context.go(AppRoutes.package),
             isExpanded: true,
-            icon: Icons.add_circle,
+            icon: Icons.add_circle_outline,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CreditStatusBadge extends StatelessWidget {
+  const _CreditStatusBadge({required this.isEnough, required this.remaining});
+
+  final bool isEnough;
+  final int? remaining;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: isEnough
+            ? AppColors.secondaryContainer.withAlpha(128)
+            : AppColors.errorContainer,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isEnough ? Icons.check_circle_outline : Icons.warning_amber_rounded,
+            size: 16,
+            color: isEnough
+                ? AppColors.onSecondaryContainer
+                : AppColors.onErrorContainer,
+          ),
+          const SizedBox(width: AppSpacing.xxs),
+          Text(
+            remaining != null
+                ? (isEnough ? 'Ready to book' : 'Low balance')
+                : 'Loading...',
+            style: AppTypography.labelCaps.copyWith(
+              color: isEnough
+                  ? AppColors.onSecondaryContainer
+                  : AppColors.onErrorContainer,
+            ),
           ),
         ],
       ),
@@ -219,32 +283,35 @@ class _TransactionsSection extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.screenPadding,
           ),
-          child: Text('Recent Transactions', style: AppTypography.h3),
+          child: Text('Recent Activity', style: AppTypography.h3),
         ),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: AppSpacing.md),
         transactionsAsync.when(
           data: (transactions) {
             if (transactions.isEmpty) {
               return const _EmptyTransactions();
             }
-            return Column(
-              children: transactions.asMap().entries.map((entry) {
-                final index = entry.key;
-                final transaction = entry.value;
-                final isLast = index == transactions.length - 1;
-                return Padding(
-                  padding: EdgeInsets.only(
-                    left: AppSpacing.screenPadding,
-                    right: AppSpacing.screenPadding,
-                    bottom: isLast ? 0 : AppSpacing.md,
-                  ),
-                  child: _TransactionCard(transaction: transaction),
-                );
-              }).toList(),
+            return Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.screenPadding,
+              ),
+              child: Column(
+                children: transactions.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final transaction = entry.value;
+                  final isLast = index == transactions.length - 1;
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      bottom: isLast ? 0 : AppSpacing.sm,
+                    ),
+                    child: _TransactionCard(transaction: transaction),
+                  );
+                }).toList(),
+              ),
             );
           },
           loading: () => const _LoadingTransactions(),
-          error: (_, __) => const _ErrorTransactions(),
+          error: (e, st) => const _ErrorTransactions(),
         ),
       ],
     );
@@ -264,16 +331,15 @@ class _TransactionCard extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(AppRadius.card),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(color: AppColors.surfaceVariant.withAlpha(128)),
-        boxShadow: AppShadows.subtle,
       ),
       child: Row(
         children: [
           // Icon
           Container(
-            width: 48,
-            height: 48,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
               color: isCredit
                   ? AppColors.secondaryContainer
@@ -281,11 +347,11 @@ class _TransactionCard extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: Icon(
-              isCredit ? Icons.payments_outlined : Icons.spa_outlined,
+              isCredit ? Icons.add_circle_outline : Icons.remove_circle_outline,
               color: isCredit
                   ? AppColors.onSecondaryContainer
                   : AppColors.onSurfaceVariant,
-              size: 24,
+              size: 20,
             ),
           ),
           const SizedBox(width: AppSpacing.md),
@@ -313,13 +379,23 @@ class _TransactionCard extends StatelessWidget {
             ),
           ),
           // Amount
-          Text(
-            isCredit ? '+ ${transaction.amount}' : '- ${transaction.amount}',
-            style: AppTypography.bodyLg.copyWith(
-              fontWeight: FontWeight.w600,
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.sm,
+              vertical: AppSpacing.xs,
+            ),
+            decoration: BoxDecoration(
               color: isCredit
-                  ? AppColors.onSecondaryContainer
-                  : AppColors.onSurface,
+                  ? AppColors.secondaryContainer.withAlpha(77)
+                  : AppColors.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(AppRadius.pill),
+            ),
+            child: Text(
+              isCredit ? '+${transaction.amount}' : '-${transaction.amount}',
+              style: AppTypography.bodyMd.copyWith(
+                fontWeight: FontWeight.w600,
+                color: isCredit ? AppColors.secondary : AppColors.onSurface,
+              ),
             ),
           ),
         ],
@@ -338,24 +414,18 @@ class _EmptyTransactions extends StatelessWidget {
       child: Center(
         child: Column(
           children: [
+            const SizedBox(height: AppSpacing.xl),
             Icon(
               Icons.receipt_long_outlined,
-              size: 64,
+              size: 48,
               color: AppColors.onSurfaceVariant.withAlpha(128),
             ),
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.md),
             Text(
               'No transactions yet',
-              style: AppTypography.h3,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              'Your transaction history will appear here',
               style: AppTypography.bodyMd.copyWith(
                 color: AppColors.onSurfaceVariant,
               ),
-              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -375,19 +445,19 @@ class _LoadingTransactions extends StatelessWidget {
         children: List.generate(
           3,
           (index) => Padding(
-            padding: EdgeInsets.only(bottom: index < 2 ? AppSpacing.md : 0),
+            padding: EdgeInsets.only(bottom: index < 2 ? AppSpacing.sm : 0),
             child: Container(
               padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
                 color: AppColors.surfaceContainerLowest,
-                borderRadius: BorderRadius.circular(AppRadius.card),
+                borderRadius: BorderRadius.circular(AppRadius.lg),
                 border: Border.all(color: AppColors.surfaceVariant),
               ),
               child: Row(
                 children: [
                   Container(
-                    width: 48,
-                    height: 48,
+                    width: 44,
+                    height: 44,
                     decoration: BoxDecoration(
                       color: AppColors.surfaceContainerHigh,
                       shape: BoxShape.circle,
@@ -401,13 +471,19 @@ class _LoadingTransactions extends StatelessWidget {
                         Container(
                           width: double.infinity,
                           height: 14,
-                          color: AppColors.surfaceContainerHigh,
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceContainerHigh,
+                            borderRadius: BorderRadius.circular(AppRadius.sm),
+                          ),
                         ),
                         const SizedBox(height: AppSpacing.xs),
                         Container(
-                          width: 120,
+                          width: 100,
                           height: 12,
-                          color: AppColors.surfaceContainerHigh,
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceContainerHigh,
+                            borderRadius: BorderRadius.circular(AppRadius.sm),
+                          ),
                         ),
                       ],
                     ),
@@ -432,24 +508,18 @@ class _ErrorTransactions extends StatelessWidget {
       child: Center(
         child: Column(
           children: [
+            const SizedBox(height: AppSpacing.lg),
             Icon(
               Icons.error_outline,
-              size: 64,
-              color: AppColors.error.withAlpha(179),
+              size: 48,
+              color: AppColors.error.withAlpha(128),
             ),
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.md),
             Text(
-              'Failed to load transactions',
-              style: AppTypography.h3,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              'Please try again later',
+              'Unable to load transactions',
               style: AppTypography.bodyMd.copyWith(
                 color: AppColors.onSurfaceVariant,
               ),
-              textAlign: TextAlign.center,
             ),
           ],
         ),
