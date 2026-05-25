@@ -10,6 +10,7 @@ import '../../presentation/screens/class_detail/class_detail_screen.dart';
 import '../../presentation/screens/classes/classes_screen.dart';
 import '../../presentation/screens/home/home_screen.dart';
 import '../../presentation/screens/placeholder_content.dart';
+import '../../presentation/screens/profile/profile_screen.dart';
 import '../../presentation/screens/wallet/wallet_screen.dart';
 import 'app_route_names.dart';
 import 'app_routes.dart';
@@ -77,10 +78,7 @@ final appRouter = GoRouter(
         GoRoute(
           path: AppRoutes.profile,
           name: AppRouteNames.profile,
-          builder: (context, state) => const PlaceholderContent(
-            title: 'Profile',
-            subtitle: 'Member profile tab placeholder.',
-          ),
+          builder: (context, state) => const ProfileScreen(),
         ),
       ],
     ),
