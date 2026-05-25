@@ -29,6 +29,15 @@ final schedulesByClassIdProvider =
       return repository.getSchedulesByClassId(classId);
     });
 
+/// Provider for a single schedule by ID.
+final scheduleByIdProvider = FutureProvider.family<ScheduleModel?, String>((
+  ref,
+  id,
+) async {
+  final repository = ref.watch(scheduleRepositoryProvider);
+  return repository.getScheduleById(id);
+});
+
 /// Provider for available schedules only.
 final availableSchedulesProvider = FutureProvider<List<ScheduleModel>>((
   ref,

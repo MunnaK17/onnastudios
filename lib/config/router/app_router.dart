@@ -4,12 +4,12 @@ import '../../presentation/navigation/main_app_shell.dart';
 import '../../presentation/screens/foundation_placeholder_screen.dart';
 import '../../presentation/screens/booking/booking_flow_screen.dart';
 import '../../presentation/screens/booking/booking_confirmation_screen.dart';
+import '../../presentation/screens/booking_history/booking_history_screen.dart';
 import '../../presentation/screens/package/package_screen.dart';
 import '../../presentation/screens/schedule/schedule_screen.dart';
 import '../../presentation/screens/class_detail/class_detail_screen.dart';
 import '../../presentation/screens/classes/classes_screen.dart';
 import '../../presentation/screens/home/home_screen.dart';
-import '../../presentation/screens/placeholder_content.dart';
 import '../../presentation/screens/profile/profile_screen.dart';
 import '../../presentation/screens/wallet/wallet_screen.dart';
 import 'app_route_names.dart';
@@ -110,10 +110,7 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.bookingHistory,
       name: AppRouteNames.bookingHistory,
-      builder: (context, state) => const FoundationPlaceholderScreen(
-        title: 'Booking History',
-        subtitle: 'Reservation history placeholder.',
-      ),
+      builder: (context, state) => const BookingHistoryScreen(),
     ),
     GoRoute(
       path: AppRoutes.wallet,
