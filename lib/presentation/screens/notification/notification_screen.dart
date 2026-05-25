@@ -521,13 +521,20 @@ class _ErrorNotifications extends StatelessWidget {
             Icon(
               Icons.error_outline,
               size: 48,
-              color: AppColors.error.withAlpha(128),
+              color: AppColors.onSurfaceVariant.withAlpha(128),
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              'Unable to load notifications',
+              'We could not load notifications',
               style: AppTypography.bodyMd.copyWith(
                 color: AppColors.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              'Please check your connection and try again',
+              style: AppTypography.bodySm.copyWith(
+                color: AppColors.onSurfaceVariant.withAlpha(179),
               ),
             ),
           ],
