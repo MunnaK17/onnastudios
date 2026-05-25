@@ -10,6 +10,7 @@ import '../../presentation/screens/class_detail/class_detail_screen.dart';
 import '../../presentation/screens/classes/classes_screen.dart';
 import '../../presentation/screens/home/home_screen.dart';
 import '../../presentation/screens/placeholder_content.dart';
+import '../../presentation/screens/wallet/wallet_screen.dart';
 import 'app_route_names.dart';
 import 'app_routes.dart';
 
@@ -119,10 +120,7 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.wallet,
       name: AppRouteNames.wallet,
-      builder: (context, state) => const FoundationPlaceholderScreen(
-        title: 'My Credit',
-        subtitle: 'Credit wallet placeholder.',
-      ),
+      builder: (context, state) => const WalletScreen(),
     ),
     GoRoute(
       path: AppRoutes.location,
