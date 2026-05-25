@@ -13,44 +13,39 @@ import '../../presentation/screens/home/home_screen.dart';
 import '../../presentation/screens/notification/notification_screen.dart';
 import '../../presentation/screens/profile/profile_screen.dart';
 import '../../presentation/screens/wallet/wallet_screen.dart';
+import '../../presentation/screens/auth/splash_screen.dart';
+import '../../presentation/screens/auth/onboarding_screen.dart';
+import '../../presentation/screens/auth/login_screen.dart';
+import '../../presentation/screens/auth/register_screen.dart';
+import '../../presentation/screens/instructor_profile/instructor_profile_screen.dart';
 import 'app_route_names.dart';
 import 'app_routes.dart';
 
 final appRouter = GoRouter(
-  initialLocation: AppRoutes.home,
+  initialLocation: AppRoutes.splash,
   routes: [
+    // Auth routes (no shell)
     GoRoute(
       path: AppRoutes.splash,
       name: AppRouteNames.splash,
-      builder: (context, state) => const FoundationPlaceholderScreen(
-        title: 'Onna Studios',
-        subtitle: 'Splash placeholder. Onboarding will come next.',
-      ),
+      builder: (context, state) => const SplashScreen(),
     ),
     GoRoute(
       path: AppRoutes.onboarding,
       name: AppRouteNames.onboarding,
-      builder: (context, state) => const FoundationPlaceholderScreen(
-        title: 'Onboarding',
-        subtitle: 'Welcome experience will be implemented later.',
-      ),
+      builder: (context, state) => const OnboardingScreen(),
     ),
     GoRoute(
       path: AppRoutes.login,
       name: AppRouteNames.login,
-      builder: (context, state) => const FoundationPlaceholderScreen(
-        title: 'Login',
-        subtitle: 'Authentication UI will be implemented later.',
-      ),
+      builder: (context, state) => const LoginScreen(),
     ),
     GoRoute(
       path: AppRoutes.register,
       name: AppRouteNames.register,
-      builder: (context, state) => const FoundationPlaceholderScreen(
-        title: 'Register',
-        subtitle: 'Registration UI will be implemented later.',
-      ),
+      builder: (context, state) => const RegisterScreen(),
     ),
+    // Main app shell with bottom navigation
     ShellRoute(
       builder: (context, state, child) {
         return MainAppShell(location: state.uri.path, child: child);
@@ -83,12 +78,21 @@ final appRouter = GoRouter(
         ),
       ],
     ),
+    // Detail routes (outside shell)
     GoRoute(
       path: AppRoutes.classDetail,
       name: AppRouteNames.classDetail,
       builder: (context, state) {
         final classId = state.pathParameters['id'] ?? '';
         return ClassDetailScreen(classId: classId);
+      },
+    ),
+    GoRoute(
+      path: AppRoutes.instructorProfile,
+      name: AppRouteNames.instructorProfile,
+      builder: (context, state) {
+        final instructorId = state.pathParameters['id'] ?? '';
+        return InstructorProfileScreen(instructorId: instructorId);
       },
     ),
     GoRoute(
@@ -124,14 +128,6 @@ final appRouter = GoRouter(
       builder: (context, state) => const FoundationPlaceholderScreen(
         title: 'Location',
         subtitle: 'Studio locations placeholder.',
-      ),
-    ),
-    GoRoute(
-      path: AppRoutes.instructorProfile,
-      name: AppRouteNames.instructorProfile,
-      builder: (context, state) => FoundationPlaceholderScreen(
-        title: 'Instructor Profile',
-        subtitle: 'Instructor id: ${state.pathParameters['id']}',
       ),
     ),
     GoRoute(

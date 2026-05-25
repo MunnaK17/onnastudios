@@ -129,3 +129,13 @@ final classListNotifierProvider =
     NotifierProvider<ClassListNotifier, AsyncValue<List<YogaClassModel>>>(() {
       return ClassListNotifier();
     });
+
+/// Provider for classes by instructor ID.
+final classesByInstructorIdProvider =
+    FutureProvider.family<List<YogaClassModel>, String>((
+      ref,
+      instructorId,
+    ) async {
+      final repository = ref.watch(classRepositoryProvider);
+      return repository.getClassesByInstructorId(instructorId);
+    });

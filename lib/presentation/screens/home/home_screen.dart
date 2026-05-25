@@ -584,7 +584,7 @@ class _ClassCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.push('/class/${classModel.id}'),
+      onTap: () => context.push('${AppRoutes.classDetail}/${classModel.id}'),
       child: Container(
         width: 280,
         decoration: BoxDecoration(

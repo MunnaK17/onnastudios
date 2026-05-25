@@ -58,4 +58,14 @@ class MockClassRepository implements ClassRepository {
     // Return first 4 classes as featured
     return MockOnnaData.yogaClasses.take(4).toList();
   }
+
+  @override
+  Future<List<YogaClassModel>> getClassesByInstructorId(
+    String instructorId,
+  ) async {
+    await Future.delayed(const Duration(milliseconds: 100));
+    return MockOnnaData.yogaClasses
+        .where((c) => c.instructorId == instructorId)
+        .toList();
+  }
 }

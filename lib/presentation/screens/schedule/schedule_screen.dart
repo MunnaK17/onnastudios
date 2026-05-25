@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../config/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_shadows.dart';
@@ -251,7 +252,7 @@ class _ScheduleCard extends ConsumerWidget {
 
     return GestureDetector(
       onTap: () => context.push(
-        '/booking?scheduleId=${schedule.id}&classId=${schedule.classId}',
+        '${AppRoutes.booking}?scheduleId=${schedule.id}&classId=${schedule.classId}',
       ),
       child: Container(
         decoration: BoxDecoration(
@@ -423,7 +424,7 @@ class _ScheduleCard extends ConsumerWidget {
                       AppButton(
                         label: _getButtonLabel(schedule),
                         onPressed: () => context.push(
-                          '/booking?scheduleId=${schedule.id}&classId=${schedule.classId}',
+                          '${AppRoutes.booking}?scheduleId=${schedule.id}&classId=${schedule.classId}',
                         ),
                         variant: _getButtonVariant(schedule),
                         isExpanded: false,

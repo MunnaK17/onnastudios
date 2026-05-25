@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../config/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_shadows.dart';
@@ -221,7 +222,7 @@ class _ClassCardItem extends ConsumerWidget {
     );
 
     return GestureDetector(
-      onTap: () => context.push('/classes/${classModel.id}'),
+      onTap: () => context.push('${AppRoutes.classDetail}/${classModel.id}'),
       child: Container(
         decoration: BoxDecoration(
           color: Theme.of(context).extension<OnnaThemeTokens>()!.cardSurface,

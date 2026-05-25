@@ -20,4 +20,7 @@ abstract class ClassRepository {
 
   /// Get featured/recommended classes.
   Future<List<YogaClassModel>> getFeaturedClasses();
+
+  /// Filter classes by instructor ID.
+  Future<List<YogaClassModel>> getClassesByInstructorId(String instructorId);
 }

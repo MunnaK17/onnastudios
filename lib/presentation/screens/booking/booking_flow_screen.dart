@@ -70,7 +70,7 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
       // Navigate to confirmation
       if (mounted) {
         context.pushReplacement(
-          '/booking/confirmation?bookingId=${booking.id}',
+          '${AppRoutes.bookingConfirmation}?bookingId=${booking.id}',
         );
       }
     } catch (e) {

@@ -384,7 +384,7 @@ class _InstructorSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.push('/instructor/$instructorId'),
+      onTap: () => context.push('${AppRoutes.instructorProfile}/$instructorId'),
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
@@ -782,7 +782,8 @@ class _BookClassButton extends StatelessWidget {
         top: false,
         child: AppButton(
           label: 'Book This Class',
-          onPressed: () => context.push('/booking?classId=$classId'),
+          onPressed: () =>
+              context.push('${AppRoutes.booking}?classId=$classId'),
           isExpanded: true,
         ),
       ),
