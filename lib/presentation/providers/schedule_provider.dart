@@ -2,11 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models/schedule_model.dart';
 import '../../data/repositories/interfaces/schedule_repository.dart';
-import '../../data/repositories/implementations/mock_schedule_repository.dart';
+import '../../data/repositories/implementations/supabase_schedule_repository.dart';
 
 /// Provider for ScheduleRepository instance.
 final scheduleRepositoryProvider = Provider<ScheduleRepository>((ref) {
-  return MockScheduleRepository();
+  return SupabaseScheduleRepository();
 });
 
 /// Provider for all schedules.
@@ -72,7 +72,10 @@ final schedulesForSelectedDateProvider = FutureProvider<List<ScheduleModel>>((
 /// Schedule list state notifier using Riverpod 3.x Notifier.
 class ScheduleListNotifier extends Notifier<AsyncValue<List<ScheduleModel>>> {
   @override
-  AsyncValue<List<ScheduleModel>> build() => const AsyncValue.loading();
+  AsyncValue<List<ScheduleModel>> build() {
+    Future.microtask(loadSchedules);
+    return const AsyncValue.loading();
+  }
 
   Future<void> loadSchedules() async {
     state = const AsyncValue.loading();

@@ -3,11 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/yoga_class_model.dart';
 import '../../data/models/app_enums.dart';
 import '../../data/repositories/interfaces/class_repository.dart';
-import '../../data/repositories/implementations/mock_class_repository.dart';
+import '../../data/repositories/implementations/supabase_class_repository.dart';
 
 /// Provider for ClassRepository instance.
 final classRepositoryProvider = Provider<ClassRepository>((ref) {
-  return MockClassRepository();
+  return SupabaseClassRepository();
 });
 
 /// Provider for all classes.
@@ -98,7 +98,10 @@ final filteredClassesByCategoryProvider = FutureProvider<List<YogaClassModel>>((
 /// Class list state notifier using Riverpod 3.x Notifier.
 class ClassListNotifier extends Notifier<AsyncValue<List<YogaClassModel>>> {
   @override
-  AsyncValue<List<YogaClassModel>> build() => const AsyncValue.loading();
+  AsyncValue<List<YogaClassModel>> build() {
+    Future.microtask(loadClasses);
+    return const AsyncValue.loading();
+  }
 
   Future<void> loadClasses() async {
     state = const AsyncValue.loading();

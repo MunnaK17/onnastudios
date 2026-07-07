@@ -2,11 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models/instructor_model.dart';
 import '../../data/repositories/interfaces/instructor_repository.dart';
-import '../../data/repositories/implementations/mock_instructor_repository.dart';
+import '../../data/repositories/implementations/supabase_instructor_repository.dart';
 
 /// Provider for InstructorRepository instance.
 final instructorRepositoryProvider = Provider<InstructorRepository>((ref) {
-  return MockInstructorRepository();
+  return SupabaseInstructorRepository();
 });
 
 /// Provider for all instructors.
@@ -30,7 +30,10 @@ final instructorByIdProvider = FutureProvider.family<InstructorModel?, String>((
 class InstructorListNotifier
     extends Notifier<AsyncValue<List<InstructorModel>>> {
   @override
-  AsyncValue<List<InstructorModel>> build() => const AsyncValue.loading();
+  AsyncValue<List<InstructorModel>> build() {
+    Future.microtask(loadInstructors);
+    return const AsyncValue.loading();
+  }
 
   Future<void> loadInstructors() async {
     state = const AsyncValue.loading();

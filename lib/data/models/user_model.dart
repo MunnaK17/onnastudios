@@ -5,7 +5,6 @@ class UserModel {
     required this.email,
     required this.phone,
     required this.profilePhoto,
-    required this.activeMembershipId,
     required this.remainingCredits,
   });
 
@@ -14,7 +13,6 @@ class UserModel {
   final String email;
   final String phone;
   final String profilePhoto;
-  final String? activeMembershipId;
   final int remainingCredits;
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -24,7 +22,6 @@ class UserModel {
       email: json['email'] as String,
       phone: json['phone'] as String,
       profilePhoto: json['profilePhoto'] as String,
-      activeMembershipId: json['activeMembershipId'] as String?,
       remainingCredits: json['remainingCredits'] as int,
     );
   }
@@ -36,7 +33,6 @@ class UserModel {
       'email': email,
       'phone': phone,
       'profilePhoto': profilePhoto,
-      'activeMembershipId': activeMembershipId,
       'remainingCredits': remainingCredits,
     };
   }
@@ -47,7 +43,6 @@ class UserModel {
     String? email,
     String? phone,
     String? profilePhoto,
-    String? activeMembershipId,
     int? remainingCredits,
   }) {
     return UserModel(
@@ -56,7 +51,6 @@ class UserModel {
       email: email ?? this.email,
       phone: phone ?? this.phone,
       profilePhoto: profilePhoto ?? this.profilePhoto,
-      activeMembershipId: activeMembershipId ?? this.activeMembershipId,
       remainingCredits: remainingCredits ?? this.remainingCredits,
     );
   }

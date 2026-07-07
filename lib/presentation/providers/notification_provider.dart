@@ -1,12 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/models/app_enums.dart';
 import '../../data/models/notification_item_model.dart';
 import '../../data/repositories/interfaces/notification_repository.dart';
-import '../../data/repositories/implementations/mock_notification_repository.dart';
+import '../../data/repositories/implementations/supabase_notification_repository.dart';
 
 /// Provider for NotificationRepository instance.
 final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
-  return MockNotificationRepository();
+  return SupabaseNotificationRepository();
 });
 
 /// Provider for all notifications.
@@ -35,7 +36,10 @@ final unreadCountProvider = FutureProvider<int>((ref) async {
 class NotificationNotifier
     extends Notifier<AsyncValue<List<NotificationItemModel>>> {
   @override
-  AsyncValue<List<NotificationItemModel>> build() => const AsyncValue.loading();
+  AsyncValue<List<NotificationItemModel>> build() {
+    Future.microtask(loadNotifications);
+    return const AsyncValue.loading();
+  }
 
   Future<void> loadNotifications() async {
     state = const AsyncValue.loading();
@@ -49,10 +53,77 @@ class NotificationNotifier
     }
   }
 
+  /// Create a new notification and refresh the list.
+  Future<NotificationItemModel> createNotification({
+    required String title,
+    required String message,
+    required NotificationType type,
+  }) async {
+    try {
+      final notification = await ref
+          .read(notificationRepositoryProvider)
+          .createNotification(
+            title: title,
+            message: message,
+            type: type,
+          );
+      await loadNotifications();
+      _refreshDerivedProviders();
+      return notification;
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      rethrow;
+    }
+  }
+
+  /// Create booking confirmed notification.
+  Future<NotificationItemModel> createBookingConfirmedNotification({
+    required String className,
+  }) async {
+    return createNotification(
+      title: 'Booking Confirmed! 🎉',
+      message: 'Your spot for $className has been successfully booked. See you in the studio!',
+      type: NotificationType.bookingConfirmed,
+    );
+  }
+
+  /// Create credit low warning notification.
+  Future<NotificationItemModel> createCreditLowNotification({
+    required int remainingCredits,
+  }) async {
+    return createNotification(
+      title: 'Credit Running Low ⚠️',
+      message: 'You only have $remainingCredits credits left. Consider topping up to keep booking your favorite classes.',
+      type: NotificationType.creditRunningLow,
+    );
+  }
+
+  /// Create credit depleted notification.
+  Future<NotificationItemModel> createCreditDepletedNotification() async {
+    return createNotification(
+      title: 'Credits Depleted 💳',
+      message: 'You have no credits remaining. Top up now to continue booking classes!',
+      type: NotificationType.creditRunningLow,
+    );
+  }
+
+  /// Create class reminder notification.
+  Future<NotificationItemModel> createClassReminderNotification({
+    required String className,
+    required String timeUntilClass,
+  }) async {
+    return createNotification(
+      title: 'Class Starting Soon 🧘',
+      message: '$className starts in $timeUntilClass. Don\'t forget your mat and water bottle!',
+      type: NotificationType.classReminder,
+    );
+  }
+
   Future<void> markAsRead(String notificationId) async {
     try {
       await ref.read(notificationRepositoryProvider).markAsRead(notificationId);
       await loadNotifications();
+      _refreshDerivedProviders();
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
@@ -62,6 +133,7 @@ class NotificationNotifier
     try {
       await ref.read(notificationRepositoryProvider).markAllAsRead();
       await loadNotifications();
+      _refreshDerivedProviders();
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
@@ -73,9 +145,16 @@ class NotificationNotifier
           .read(notificationRepositoryProvider)
           .deleteNotification(notificationId);
       await loadNotifications();
+      _refreshDerivedProviders();
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
+  }
+
+  void _refreshDerivedProviders() {
+    ref.invalidate(allNotificationsProvider);
+    ref.invalidate(unreadNotificationsProvider);
+    ref.invalidate(unreadCountProvider);
   }
 }
 

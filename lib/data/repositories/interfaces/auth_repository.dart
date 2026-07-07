@@ -19,6 +19,9 @@ abstract class AuthRepository {
   /// Logout the current user.
   Future<void> logout();
 
+  /// Send a password reset email.
+  Future<void> sendPasswordResetEmail(String email);
+
   /// Check if user is logged in.
   Future<bool> isLoggedIn();
 }

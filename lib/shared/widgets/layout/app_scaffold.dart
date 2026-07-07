@@ -12,6 +12,7 @@ class AppScaffold extends StatelessWidget {
     this.headerActionIcon,
     this.onHeaderActionPressed,
     this.bottomNavigation,
+    this.notificationBadgeCount = 0,
     super.key,
   });
 
@@ -22,6 +23,7 @@ class AppScaffold extends StatelessWidget {
   final IconData? headerActionIcon;
   final VoidCallback? onHeaderActionPressed;
   final AppBottomNavigation? bottomNavigation;
+  final int notificationBadgeCount;
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +36,7 @@ class AppScaffold extends StatelessWidget {
               onBackPressed: onBackPressed,
               actionIcon: headerActionIcon,
               onActionPressed: onHeaderActionPressed,
+              badgeCount: notificationBadgeCount,
             ),
       body: body,
       bottomNavigationBar: bottomNavigation,

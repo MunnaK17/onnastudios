@@ -6,6 +6,7 @@ import '../../../config/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../core/utils/app_error_message.dart';
 import '../../../shared/widgets/inputs/app_text_field.dart';
 import '../../../shared/widgets/buttons/app_button.dart';
 import '../../providers/auth_provider.dart';
@@ -86,16 +87,58 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
     } catch (e) {
       if (mounted) {
+        // Show the actual error message from Supabase
+        final errorMessage = e.toString().replaceFirst('Exception: ', '');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Login failed. Please try again.'),
+            content: Text(errorMessage),
             backgroundColor: AppColors.errorContainer,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
           ),
         );
       }
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _handleForgotPassword() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty || !_isValidEmail(email)) {
+      setState(() {
+        _emailError = 'Enter your email first';
+      });
+      return;
+    }
+
+    try {
+      await ref
+          .read(authNotifierProvider.notifier)
+          .sendPasswordResetEmail(email);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Password reset link sent to $email'),
+            backgroundColor: AppColors.secondary,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              appErrorMessage(
+                e,
+                fallback: 'Unable to send password reset email.',
+              ),
+            ),
+            backgroundColor: AppColors.error,
+          ),
+        );
       }
     }
   }
@@ -204,14 +247,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Text('Password reset coming soon'),
-                          backgroundColor: AppColors.surfaceContainerHigh,
-                        ),
-                      );
-                    },
+                    onPressed: _handleForgotPassword,
                     style: TextButton.styleFrom(
                       foregroundColor: AppColors.secondary,
                     ),

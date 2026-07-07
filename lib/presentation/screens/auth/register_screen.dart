@@ -99,26 +99,37 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // Mock registration - in real app would call repository
-      await Future.delayed(const Duration(milliseconds: 1000));
-
-      // Auto login after registration
       await ref
           .read(authNotifierProvider.notifier)
-          .login(
+          .register(
+            fullName: _nameController.text.trim(),
             email: _emailController.text.trim(),
+            phone: _phoneController.text.trim(),
             password: _passwordController.text,
           );
 
       if (mounted) {
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Registration successful! Welcome!'),
+            backgroundColor: AppColors.secondary,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        // Navigate to home
         context.go(AppRoutes.home);
       }
     } catch (e) {
       if (mounted) {
+        // Show the actual error message from Supabase
+        final errorMessage = e.toString().replaceFirst('Exception: ', '');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Registration failed. Please try again.'),
+            content: Text(errorMessage),
             backgroundColor: AppColors.errorContainer,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
           ),
         );
       }

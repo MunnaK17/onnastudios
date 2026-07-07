@@ -9,7 +9,6 @@ import '../../../core/theme/app_shadows.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../data/models/user_model.dart';
-import '../../providers/membership_provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/wallet_provider.dart';
@@ -25,17 +24,9 @@ class ProfileScreen extends ConsumerWidget {
         child: Column(
           children: [
             const SizedBox(height: AppSpacing.lg),
-            // Profile Header
             const _ProfileHeaderSection(),
             const SizedBox(height: AppSpacing.xxl),
-            // Membership Summary
-            const _MembershipSummarySection(),
-            const SizedBox(height: AppSpacing.xxl),
-            // Profile Menu
             const _ProfileMenuSection(),
-            const SizedBox(height: AppSpacing.xxl),
-            // Logout Button
-            const _LogoutSection(),
             const SizedBox(height: AppSpacing.lg),
           ],
         ),
@@ -54,12 +45,15 @@ class _ProfileHeaderSection extends ConsumerWidget {
     return profileAsync.when(
       data: (user) {
         if (user == null) {
-          return const _ProfileErrorState(message: 'Profile not found');
+          return const _ProfileInfoPlaceholder();
         }
         return _ProfileInfo(user: user);
       },
       loading: () => const _ProfileLoadingState(),
-      error: (e, st) => _ProfileErrorState(message: 'Failed to load profile'),
+      error: (e, _) => _ProfileErrorState(
+        message: 'Failed to load profile',
+        onRetry: () => ref.invalidate(profileNotifierProvider),
+      ),
     );
   }
 }
@@ -75,7 +69,6 @@ class _ProfileInfo extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
       child: Column(
         children: [
-          // Avatar
           Container(
             width: 96,
             height: 96,
@@ -84,27 +77,20 @@ class _ProfileInfo extends StatelessWidget {
               boxShadow: AppShadows.elevated,
             ),
             child: ClipOval(
-              child: Image.network(
-                user.profilePhoto,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: AppColors.surfaceContainerHigh,
-                    child: Icon(
-                      Icons.person,
-                      size: 48,
-                      color: AppColors.onSurfaceVariant,
-                    ),
-                  );
-                },
-              ),
+              child: user.profilePhoto.isNotEmpty
+                  ? Image.network(
+                      user.profilePhoto,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return _DefaultAvatar();
+                      },
+                    )
+                  : _DefaultAvatar(),
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
-          // Name
           Text(user.fullName, style: AppTypography.h2),
           const SizedBox(height: AppSpacing.xs),
-          // Email
           Text(
             user.email,
             style: AppTypography.bodyMd.copyWith(
@@ -112,7 +98,6 @@ class _ProfileInfo extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.xxs),
-          // Phone
           Text(
             user.phone,
             style: AppTypography.bodySm.copyWith(
@@ -120,6 +105,20 @@ class _ProfileInfo extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _DefaultAvatar extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: AppColors.surfaceContainerHigh,
+      child: Icon(
+        Icons.person,
+        size: 48,
+        color: AppColors.onSurfaceVariant,
       ),
     );
   }
@@ -167,9 +166,10 @@ class _ProfileLoadingState extends StatelessWidget {
 }
 
 class _ProfileErrorState extends StatelessWidget {
-  const _ProfileErrorState({required this.message});
+  const _ProfileErrorState({required this.message, this.onRetry});
 
   final String message;
+  final VoidCallback? onRetry;
 
   @override
   Widget build(BuildContext context) {
@@ -195,175 +195,54 @@ class _ProfileErrorState extends StatelessWidget {
             message,
             style: AppTypography.bodyMd.copyWith(color: AppColors.error),
           ),
+          if (onRetry != null) ...[
+            const SizedBox(height: AppSpacing.md),
+            TextButton(
+              onPressed: onRetry,
+              child: const Text('Retry'),
+            ),
+          ],
         ],
       ),
     );
   }
 }
 
-class _MembershipSummarySection extends ConsumerWidget {
-  const _MembershipSummarySection();
+class _ProfileInfoPlaceholder extends StatelessWidget {
+  const _ProfileInfoPlaceholder();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final activeMembershipAsync = ref.watch(activeMembershipProvider);
-    final walletAsync = ref.watch(walletNotifierProvider);
-
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Membership', style: AppTypography.h3),
-          const SizedBox(height: AppSpacing.md),
           Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(AppSpacing.lg),
+            width: 96,
+            height: 96,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  AppColors.tertiaryContainer,
-                  AppColors.secondaryContainer,
-                ],
-              ),
-              borderRadius: BorderRadius.circular(AppRadius.card),
-              boxShadow: AppShadows.ambient,
+              shape: BoxShape.circle,
+              color: AppColors.surfaceContainerHigh,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Active Package
-                Row(
-                  children: [
-                    Icon(
-                      Icons.workspace_premium_outlined,
-                      color: AppColors.onTertiaryFixed,
-                      size: 20,
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Text(
-                      'Active Package',
-                      style: AppTypography.labelCaps.copyWith(
-                        color: AppColors.onTertiaryFixed.withAlpha(179),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                activeMembershipAsync.when(
-                  data: (membership) => Text(
-                    membership?.name ?? 'No active package',
-                    style: AppTypography.h3.copyWith(
-                      color: AppColors.onTertiaryFixed,
-                    ),
-                  ),
-                  loading: () => Container(
-                    width: 120,
-                    height: 24,
-                    color: AppColors.onTertiaryFixed.withAlpha(51),
-                  ),
-                  error: (e, st) => Text(
-                    'Unable to load',
-                    style: AppTypography.bodySm.copyWith(
-                      color: AppColors.onTertiaryFixed.withAlpha(179),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                // Credits and Validity Row
-                Row(
-                  children: [
-                    // Credits
-                    Expanded(
-                      child: walletAsync.when(
-                        data: (wallet) => _MembershipBadge(
-                          icon: Icons.monetization_on_outlined,
-                          label: '${wallet.remainingCredits} Credits',
-                        ),
-                        loading: () => _MembershipBadge(
-                          icon: Icons.monetization_on_outlined,
-                          label: '...',
-                        ),
-                        error: (e, st) => _MembershipBadge(
-                          icon: Icons.monetization_on_outlined,
-                          label: '--',
-                        ),
-                      ),
-                    ),
-                    // Validity
-                    Expanded(
-                      child: activeMembershipAsync.when(
-                        data: (membership) => _MembershipBadge(
-                          icon: Icons.calendar_today_outlined,
-                          label: membership != null
-                              ? '${membership.validityDays} days'
-                              : '--',
-                        ),
-                        loading: () => _MembershipBadge(
-                          icon: Icons.calendar_today_outlined,
-                          label: '...',
-                        ),
-                        error: (e, st) => _MembershipBadge(
-                          icon: Icons.calendar_today_outlined,
-                          label: '--',
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+            child: Icon(
+              Icons.person,
+              size: 48,
+              color: AppColors.onSurfaceVariant,
             ),
           ),
+          const SizedBox(height: AppSpacing.lg),
+          Text('Guest User', style: AppTypography.h2),
         ],
       ),
     );
   }
 }
 
-class _MembershipBadge extends StatelessWidget {
-  const _MembershipBadge({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xs,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.onTertiaryFixed.withAlpha(51),
-        borderRadius: BorderRadius.circular(AppRadius.pill),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: AppColors.onTertiaryFixed),
-          const SizedBox(width: AppSpacing.xxs),
-          Flexible(
-            child: Text(
-              label,
-              style: AppTypography.bodySm.copyWith(
-                color: AppColors.onTertiaryFixed,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ProfileMenuSection extends StatelessWidget {
+class _ProfileMenuSection extends ConsumerWidget {
   const _ProfileMenuSection();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -374,7 +253,6 @@ class _ProfileMenuSection extends StatelessWidget {
           child: Text('Settings', style: AppTypography.h3),
         ),
         const SizedBox(height: AppSpacing.md),
-        // Menu Items
         Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.screenPadding,
@@ -384,38 +262,25 @@ class _ProfileMenuSection extends StatelessWidget {
               _ProfileMenuItem(
                 icon: Icons.account_balance_wallet_outlined,
                 label: 'My Credits',
-                onTap: () => context.go(AppRoutes.wallet),
+                onTap: () => context.push(AppRoutes.wallet),
               ),
               const SizedBox(height: AppSpacing.md),
               _ProfileMenuItem(
                 icon: Icons.history,
                 label: 'Booking History',
-                onTap: () => context.go(AppRoutes.bookingHistory),
+                onTap: () => context.push(AppRoutes.bookingHistory),
               ),
               const SizedBox(height: AppSpacing.md),
               _ProfileMenuItem(
                 icon: Icons.notifications_outlined,
                 label: 'Notifications',
-                onTap: () => context.go(AppRoutes.notification),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              _ProfileMenuItem(
-                icon: Icons.location_on_outlined,
-                label: 'Location',
-                onTap: () => context.go(AppRoutes.location),
+                onTap: () => context.push(AppRoutes.notification),
               ),
               const SizedBox(height: AppSpacing.md),
               _ProfileMenuItem(
                 icon: Icons.settings_outlined,
                 label: 'Account Settings',
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Account settings coming soon'),
-                      backgroundColor: AppColors.surfaceContainerHigh,
-                    ),
-                  );
-                },
+                onTap: () => context.push(AppRoutes.accountSettings),
               ),
               const SizedBox(height: AppSpacing.md),
               _ProfileMenuItem(
@@ -424,16 +289,31 @@ class _ProfileMenuSection extends StatelessWidget {
                 onTap: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Help & Support coming soon'),
+                      content: const Text('Help & Support coming soon'),
                       backgroundColor: AppColors.surfaceContainerHigh,
                     ),
                   );
                 },
               ),
+              const SizedBox(height: AppSpacing.md),
+              _ProfileMenuItem(
+                icon: Icons.logout,
+                label: 'Log Out',
+                onTap: () => _showLogoutConfirmation(context, ref),
+                isDestructive: true,
+              ),
             ],
           ),
         ),
       ],
+    );
+  }
+
+  void _showLogoutConfirmation(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _LogoutConfirmationSheet(),
     );
   }
 }
@@ -443,14 +323,18 @@ class _ProfileMenuItem extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onTap,
+    this.isDestructive = false,
   });
 
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+  final bool isDestructive;
 
   @override
   Widget build(BuildContext context) {
+    final iconColor = isDestructive ? AppColors.error : AppColors.onSurface;
+
     return Material(
       color: AppColors.surfaceContainerLowest,
       borderRadius: BorderRadius.circular(AppRadius.card),
@@ -466,7 +350,6 @@ class _ProfileMenuItem extends StatelessWidget {
           ),
           child: Row(
             children: [
-              // Icon
               Container(
                 width: 44,
                 height: 44,
@@ -474,19 +357,18 @@ class _ProfileMenuItem extends StatelessWidget {
                   color: AppColors.surfaceContainerHigh,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, color: AppColors.onSurface, size: 22),
+                child: Icon(icon, color: iconColor, size: 22),
               ),
               const SizedBox(width: AppSpacing.md),
-              // Label
               Expanded(
                 child: Text(
                   label,
                   style: AppTypography.bodyMd.copyWith(
                     fontWeight: FontWeight.w500,
+                    color: isDestructive ? AppColors.error : null,
                   ),
                 ),
               ),
-              // Chevron
               Icon(
                 Icons.chevron_right,
                 color: AppColors.outlineVariant,
@@ -500,45 +382,8 @@ class _ProfileMenuItem extends StatelessWidget {
   }
 }
 
-class _LogoutSection extends ConsumerWidget {
-  const _LogoutSection();
-
-  void _showLogoutConfirmation(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _LogoutConfirmationSheet(ref: ref),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
-      child: OutlinedButton(
-        onPressed: () => _showLogoutConfirmation(context, ref),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.onSurfaceVariant,
-          side: BorderSide(color: AppColors.outline),
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.xl,
-            vertical: AppSpacing.md,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.button),
-          ),
-          textStyle: AppTypography.labelCaps,
-        ),
-        child: const Text('LOG OUT'),
-      ),
-    );
-  }
-}
-
 class _LogoutConfirmationSheet extends ConsumerStatefulWidget {
-  const _LogoutConfirmationSheet({required this.ref});
-
-  final WidgetRef ref;
+  const _LogoutConfirmationSheet();
 
   @override
   ConsumerState<_LogoutConfirmationSheet> createState() =>
@@ -556,6 +401,10 @@ class _LogoutConfirmationSheetState
 
     try {
       await ref.read(authNotifierProvider.notifier).logout();
+      ref.invalidate(profileNotifierProvider);
+      ref.invalidate(userProfileProvider);
+      ref.invalidate(currentUserProvider);
+      ref.invalidate(walletNotifierProvider);
       if (mounted) {
         Navigator.pop(context);
         context.go(AppRoutes.login);
@@ -588,7 +437,6 @@ class _LogoutConfirmationSheetState
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Handle
             Container(
               width: 40,
               height: 4,
@@ -599,7 +447,6 @@ class _LogoutConfirmationSheetState
               ),
             ),
             const SizedBox(height: AppSpacing.xl),
-            // Icon
             Container(
               width: 64,
               height: 64,
@@ -614,10 +461,8 @@ class _LogoutConfirmationSheetState
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
-            // Title
             Text('Log Out?', style: AppTypography.h3),
             const SizedBox(height: AppSpacing.sm),
-            // Description
             Text(
               'Are you sure you want to log out? You can always come back.',
               style: AppTypography.bodyMd.copyWith(
@@ -626,7 +471,6 @@ class _LogoutConfirmationSheetState
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.xl),
-            // Buttons
             Row(
               children: [
                 Expanded(

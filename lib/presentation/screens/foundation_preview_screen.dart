@@ -1,24 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_spacing.dart';
-import '../../data/mock/mock_data.dart';
 import '../../shared/widgets/widgets.dart';
+import '../providers/providers.dart';
 
-class FoundationPreviewScreen extends StatelessWidget {
+class FoundationPreviewScreen extends ConsumerWidget {
   const FoundationPreviewScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
+    final classesAsync = ref.watch(allClassesProvider);
+    final instructorsAsync = ref.watch(allInstructorsProvider);
+    final schedulesAsync = ref.watch(allSchedulesProvider);
 
     return SafeArea(
       child: ListView(
         padding: const EdgeInsets.all(AppSpacing.screenPadding),
         children: [
-          Text('Good Morning, Alya.', style: textTheme.displayLarge),
+          Text('Good Morning!', style: textTheme.displayLarge),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Foundation, navigation, reusable components, and mock data are ready.',
+            'Foundation, navigation, reusable components ready. Connected to Supabase.',
             style: textTheme.bodyLarge,
           ),
           const SizedBox(height: AppSpacing.xl),
@@ -36,32 +40,39 @@ class FoundationPreviewScreen extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.xl),
           const SectionHeader(
-            title: 'Build Progress',
-            subtitle: 'Visible preview of the current app foundation.',
+            title: 'Data from Supabase',
+            subtitle: 'Live data preview from your database.',
           ),
           const SizedBox(height: AppSpacing.md),
           AppCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _ProgressRow(
+                _DataRow(
                   label: 'Yoga classes',
-                  value: MockOnnaData.yogaClasses.length.toString(),
+                  value: classesAsync.when(
+                    data: (classes) => classes.length.toString(),
+                    loading: () => '...',
+                    error: (e, s) => '0',
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.md),
-                _ProgressRow(
+                _DataRow(
                   label: 'Instructors',
-                  value: MockOnnaData.instructors.length.toString(),
+                  value: instructorsAsync.when(
+                    data: (instructors) => instructors.length.toString(),
+                    loading: () => '...',
+                    error: (e, s) => '0',
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.md),
-                _ProgressRow(
+                _DataRow(
                   label: 'Schedules',
-                  value: MockOnnaData.schedules.length.toString(),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                _ProgressRow(
-                  label: 'Packages',
-                  value: MockOnnaData.membershipPackages.length.toString(),
+                  value: schedulesAsync.when(
+                    data: (schedules) => schedules.length.toString(),
+                    loading: () => '...',
+                    error: (e, s) => '0',
+                  ),
                 ),
               ],
             ),
@@ -89,8 +100,8 @@ class FoundationPreviewScreen extends StatelessWidget {
   }
 }
 
-class _ProgressRow extends StatelessWidget {
-  const _ProgressRow({required this.label, required this.value});
+class _DataRow extends StatelessWidget {
+  const _DataRow({required this.label, required this.value});
 
   final String label;
   final String value;

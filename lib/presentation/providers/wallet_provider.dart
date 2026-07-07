@@ -2,11 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models/wallet_transaction_model.dart';
 import '../../data/repositories/interfaces/wallet_repository.dart';
-import '../../data/repositories/implementations/mock_wallet_repository.dart';
+import '../../data/repositories/implementations/supabase_wallet_repository.dart';
 
 /// Provider for WalletRepository instance.
 final walletRepositoryProvider = Provider<WalletRepository>((ref) {
-  return MockWalletRepository();
+  return SupabaseWalletRepository();
 });
 
 /// Provider for remaining credits.
@@ -62,7 +62,10 @@ final walletSummaryProvider = FutureProvider<WalletSummary>((ref) async {
 /// Wallet state notifier using Riverpod 3.x Notifier.
 class WalletNotifier extends Notifier<AsyncValue<WalletSummary>> {
   @override
-  AsyncValue<WalletSummary> build() => const AsyncValue.loading();
+  AsyncValue<WalletSummary> build() {
+    Future.microtask(loadWallet);
+    return const AsyncValue.loading();
+  }
 
   Future<void> loadWallet() async {
     state = const AsyncValue.loading();

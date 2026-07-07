@@ -8,10 +8,13 @@ import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_shadows.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../core/utils/app_error_message.dart';
+import '../../../data/models/schedule_model.dart';
 import '../../../data/models/yoga_class_model.dart';
 import '../../providers/booking_provider.dart';
 import '../../providers/class_provider.dart';
 import '../../providers/instructor_provider.dart';
+import '../../providers/notification_provider.dart';
 import '../../providers/schedule_provider.dart';
 import '../../providers/wallet_provider.dart';
 import '../../../shared/widgets/buttons/app_button.dart';
@@ -29,6 +32,9 @@ class BookingFlowScreen extends ConsumerStatefulWidget {
 class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
   bool _isBooking = false;
 
+  /// Low credit threshold - notify user when credits fall below this
+  static const int _lowCreditThreshold = 5;
+
   Future<void> _confirmBooking(YogaClassModel yogaClass) async {
     setState(() {
       _isBooking = true;
@@ -37,16 +43,33 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
     try {
       // Use scheduleId if available, otherwise get first available schedule for class
       String actualScheduleId = widget.scheduleId ?? '';
+      final upcomingBookings = await ref.read(upcomingBookingsProvider.future);
 
       if (actualScheduleId.isEmpty) {
         // Find available schedule for this class
         final schedules = await ref.read(allSchedulesProvider.future);
         final availableSchedule = schedules
-            .where((s) => s.classId == yogaClass.id && s.availableSlots > 0)
+            .where(
+              (s) =>
+                  s.classId == yogaClass.id &&
+                  s.availableSlots > 0 &&
+                  !upcomingBookings.any((b) => b.scheduleId == s.id),
+            )
             .firstOrNull;
 
         if (availableSchedule != null) {
           actualScheduleId = availableSchedule.id;
+        }
+      } else {
+        if (upcomingBookings.any((b) => b.scheduleId == actualScheduleId)) {
+          throw Exception('You already booked this schedule.');
+        }
+
+        final schedule = await ref.read(
+          scheduleByIdProvider(actualScheduleId).future,
+        );
+        if (schedule == null || schedule.availableSlots <= 0) {
+          throw Exception('This class is already full.');
         }
       }
 
@@ -54,23 +77,38 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
         throw Exception('No available schedule for this class');
       }
 
-      // Create booking via provider
       final booking = await ref
-          .read(bookingRepositoryProvider)
+          .read(bookingNotifierProvider.notifier)
           .createBooking(
             scheduleId: actualScheduleId,
             classId: widget.classId ?? yogaClass.id,
           );
 
-      // Deduct credits
-      await ref
-          .read(walletNotifierProvider.notifier)
-          .deductCredits(yogaClass.creditCost, 'Booked: ${yogaClass.title}');
+      // Create notification for successful booking
+      await ref.read(notificationNotifierProvider.notifier).createBookingConfirmedNotification(
+        className: yogaClass.title,
+      );
+
+      // Check credit balance after booking and notify if low
+      await _checkAndNotifyLowCredits();
+
+      ref.invalidate(remainingCreditsProvider);
+      ref.invalidate(walletSummaryProvider);
+      ref.invalidate(transactionHistoryProvider);
+      ref.invalidate(walletNotifierProvider);
+      ref.invalidate(userBookingsProvider);
+      ref.invalidate(upcomingBookingsProvider);
+      ref.invalidate(allSchedulesProvider);
+      ref.invalidate(availableSchedulesProvider);
+      ref.invalidate(schedulesByClassIdProvider(yogaClass.id));
+      ref.invalidate(scheduleByIdProvider(actualScheduleId));
+      ref.invalidate(unreadCountProvider);
+      ref.invalidate(notificationNotifierProvider);
 
       // Navigate to confirmation
       if (mounted) {
         context.pushReplacement(
-          '${AppRoutes.bookingConfirmation}?bookingId=${booking.id}',
+          AppRoutes.bookingConfirmationPath(bookingId: booking.id),
         );
       }
     } catch (e) {
@@ -78,7 +116,11 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'This class could not be booked. Please try another schedule or refresh availability.',
+              appErrorMessage(
+                e,
+                fallback:
+                    'This class could not be booked. Please try another schedule or refresh availability.',
+              ),
             ),
             backgroundColor: AppColors.error,
           ),
@@ -87,6 +129,26 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
           _isBooking = false;
         });
       }
+    }
+  }
+
+  /// Check credit balance after booking and create notification if low.
+  Future<void> _checkAndNotifyLowCredits() async {
+    try {
+      final remainingCredits = await ref.read(remainingCreditsProvider.future);
+
+      if (remainingCredits == 0) {
+        // Create depleted notification
+        await ref.read(notificationNotifierProvider.notifier).createCreditDepletedNotification();
+      } else if (remainingCredits <= _lowCreditThreshold) {
+        // Create low credit warning notification
+        await ref.read(notificationNotifierProvider.notifier).createCreditLowNotification(
+          remainingCredits: remainingCredits,
+        );
+      }
+    } catch (e) {
+      // Silently fail - notification is not critical
+      debugPrint('Failed to check/create low credit notification: $e');
     }
   }
 
@@ -305,15 +367,52 @@ class _ScheduleInfoSection extends ConsumerWidget {
           return const SizedBox.shrink();
         }
 
+        // Check if schedule is in the past
+        final isPast = schedule.isPast;
+
         return _InfoCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Session',
-                style: AppTypography.labelCaps.copyWith(
-                  color: AppColors.onSurfaceVariant,
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Session',
+                      style: AppTypography.labelCaps.copyWith(
+                        color: AppColors.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                  if (isPast)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: AppSpacing.xxs,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceContainerHigh,
+                        borderRadius: BorderRadius.circular(AppRadius.pill),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.history,
+                            size: 12,
+                            color: AppColors.onSurfaceVariant,
+                          ),
+                          const SizedBox(width: AppSpacing.xxs),
+                          Text(
+                            'Ended',
+                            style: AppTypography.labelCaps.copyWith(
+                              color: AppColors.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
               ),
               const SizedBox(height: AppSpacing.md),
               Row(
@@ -344,9 +443,11 @@ class _ScheduleInfoSection extends ConsumerWidget {
               _ScheduleInfoItem(
                 icon: Icons.event_seat_outlined,
                 label: 'Availability',
-                value: schedule.availableSlots > 0
-                    ? '${schedule.availableSlots} spots left'
-                    : 'Full - Waitlist only',
+                value: isPast
+                    ? 'Class has ended'
+                    : (schedule.availableSlots > 0
+                        ? '${schedule.availableSlots} spots left'
+                        : 'Full - Waitlist only'),
               ),
             ],
           ),
@@ -470,8 +571,11 @@ class _CreditSummarySection extends ConsumerWidget {
                           vertical: AppSpacing.xxs,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.tertiaryContainer.withAlpha(128),
+                          color: AppColors.primary.withAlpha(26),
                           borderRadius: BorderRadius.circular(AppRadius.sm),
+                          border: Border.all(
+                            color: AppColors.primary.withAlpha(51),
+                          ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -479,13 +583,14 @@ class _CreditSummarySection extends ConsumerWidget {
                             Icon(
                               Icons.remove,
                               size: 16,
-                              color: AppColors.onTertiaryContainer,
+                              color: AppColors.primary,
                             ),
                             const SizedBox(width: AppSpacing.xxs),
                             Text(
                               '$creditCost Credit - Class Cost',
                               style: AppTypography.bodySm.copyWith(
-                                color: AppColors.onTertiaryContainer,
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
@@ -535,7 +640,7 @@ class _CreditSummarySection extends ConsumerWidget {
                               const SizedBox(width: AppSpacing.sm),
                               Expanded(
                                 child: Text(
-                                  'Insufficient credits. Please purchase a package to continue.',
+                                  'Insufficient credits. Please contact the studio.',
                                   style: AppTypography.bodySm.copyWith(
                                     color: AppColors.onErrorContainer,
                                   ),
@@ -584,6 +689,10 @@ class _BottomCTA extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final classAsync = ref.watch(classByIdProvider(classId));
     final creditsAsync = ref.watch(remainingCreditsProvider);
+    final scheduleAsync = scheduleId == null
+        ? ref.watch(schedulesByClassIdProvider(classId))
+        : ref.watch(scheduleByIdProvider(scheduleId!));
+    final bookingsAsync = ref.watch(upcomingBookingsProvider);
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.screenPadding),
@@ -609,20 +718,104 @@ class _BottomCTA extends ConsumerWidget {
                 final hasEnoughCredits =
                     remainingCredits >= yogaClass.creditCost;
 
-                if (hasEnoughCredits) {
+                if (!hasEnoughCredits) {
                   return AppButton(
-                    label: isBooking ? 'Booking...' : 'Confirm Booking',
-                    onPressed: isBooking ? null : () => onBook(yogaClass),
-                    isLoading: isBooking,
-                    isExpanded: true,
-                  );
-                } else {
-                  return AppButton(
-                    label: 'Get More Credits',
-                    onPressed: () => context.push(AppRoutes.package),
+                    label: 'Not Enough Credits',
+                    onPressed: null,
                     isExpanded: true,
                   );
                 }
+
+                return scheduleAsync.when(
+                  data: (scheduleData) {
+                    // Check if schedule is in the past
+                    final ScheduleModel? schedule;
+                    final bool isPast;
+                    final List<ScheduleModel> scheduleList;
+
+                    if (scheduleId == null) {
+                      scheduleList = scheduleData as List<ScheduleModel>;
+                      schedule = null;
+                      isPast = false;
+                    } else {
+                      schedule = scheduleData as ScheduleModel;
+                      scheduleList = [];
+                      isPast = schedule.isPast;
+                    }
+
+                    // If schedule is in the past, show "Class Ended" button
+                    if (isPast) {
+                      return AppButton(
+                        label: 'Class Ended',
+                        onPressed: null,
+                        isExpanded: true,
+                        variant: AppButtonVariant.secondary,
+                      );
+                    }
+
+                    final hasAvailableSchedule = scheduleId == null
+                        ? scheduleList.any((s) => s.availableSlots > 0)
+                        : schedule != null && schedule.availableSlots > 0;
+
+                    if (!hasAvailableSchedule) {
+                      return AppButton(
+                        label: 'Class Full',
+                        onPressed: null,
+                        isExpanded: true,
+                      );
+                    }
+
+                    return bookingsAsync.when(
+                      data: (bookings) {
+                        final isAlreadyBooked = scheduleId == null
+                            ? scheduleList
+                                .where((s) => s.availableSlots > 0)
+                                .every(
+                                  (s) => bookings.any(
+                                    (b) => b.scheduleId == s.id,
+                                  ),
+                                )
+                            : bookings.any((b) => b.scheduleId == scheduleId);
+
+                        if (isAlreadyBooked) {
+                          return AppButton(
+                            label: 'Already Booked',
+                            onPressed: null,
+                            isExpanded: true,
+                          );
+                        }
+
+                        return AppButton(
+                          label: isBooking ? 'Booking...' : 'Confirm Booking',
+                          onPressed: isBooking ? null : () => onBook(yogaClass),
+                          isLoading: isBooking,
+                          isExpanded: true,
+                        );
+                      },
+                      loading: () => AppButton(
+                        label: 'Checking...',
+                        onPressed: null,
+                        isExpanded: true,
+                      ),
+                      error: (_, _) => AppButton(
+                        label: isBooking ? 'Booking...' : 'Confirm Booking',
+                        onPressed: isBooking ? null : () => onBook(yogaClass),
+                        isLoading: isBooking,
+                        isExpanded: true,
+                      ),
+                    );
+                  },
+                  loading: () => AppButton(
+                    label: 'Checking...',
+                    onPressed: null,
+                    isExpanded: true,
+                  ),
+                  error: (_, _) => AppButton(
+                    label: 'Schedule Not Available',
+                    onPressed: null,
+                    isExpanded: true,
+                  ),
+                );
               },
               loading: () => AppButton(
                 label: 'Loading...',

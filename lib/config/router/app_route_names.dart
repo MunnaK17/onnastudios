@@ -7,13 +7,19 @@ abstract final class AppRouteNames {
   static const classes = 'classes';
   static const classDetail = 'classDetail';
   static const schedule = 'schedule';
+  static const scheduleSelect = 'scheduleSelect';
+  static const moodTab = 'moodTab';
+  static const moodTracker = 'moodTracker';
+  static const moodRecommendations = 'moodRecommendations';
+  static const moodHistory = 'moodHistory';
   static const booking = 'booking';
   static const bookingConfirmation = 'bookingConfirmation';
   static const bookingHistory = 'bookingHistory';
-  static const package = 'package';
+  static const bookingReschedule = 'bookingReschedule';
   static const wallet = 'wallet';
-  static const location = 'location';
+  static const topUp = 'topUp';
   static const instructorProfile = 'instructorProfile';
   static const notification = 'notification';
   static const profile = 'profile';
+  static const accountSettings = 'accountSettings';
 }

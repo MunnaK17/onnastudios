@@ -11,7 +11,7 @@ abstract class WalletRepository {
   /// Get recent transactions.
   Future<List<WalletTransactionModel>> getRecentTransactions({int limit = 5});
 
-  /// Add credits to wallet (after package purchase).
+  /// Add credits through a trusted administrative flow.
   Future<void> addCredits(int amount, String description);
 
   /// Deduct credits (after booking).

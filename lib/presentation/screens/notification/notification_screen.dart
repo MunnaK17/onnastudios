@@ -11,81 +11,286 @@ import '../../../core/theme/app_typography.dart';
 import '../../../data/models/app_enums.dart';
 import '../../../data/models/notification_item_model.dart';
 import '../../providers/notification_provider.dart';
+import '../../../shared/widgets/state/app_state_widgets.dart';
+
+/// Provider for notification preferences (in-memory state for MVP).
+/// In production, this should be persisted to Supabase.
+final notificationPreferencesProvider =
+    NotifierProvider<NotificationPreferencesNotifier, NotificationPreferences>(
+  NotificationPreferencesNotifier.new,
+);
+
+class NotificationPreferences {
+  const NotificationPreferences({
+    this.bookingEnabled = true,
+    this.reminderEnabled = true,
+    this.creditEnabled = true,
+    this.promotionEnabled = true,
+  });
+
+  final bool bookingEnabled;
+  final bool reminderEnabled;
+  final bool creditEnabled;
+  final bool promotionEnabled;
+
+  NotificationPreferences copyWith({
+    bool? bookingEnabled,
+    bool? reminderEnabled,
+    bool? creditEnabled,
+    bool? promotionEnabled,
+  }) {
+    return NotificationPreferences(
+      bookingEnabled: bookingEnabled ?? this.bookingEnabled,
+      reminderEnabled: reminderEnabled ?? this.reminderEnabled,
+      creditEnabled: creditEnabled ?? this.creditEnabled,
+      promotionEnabled: promotionEnabled ?? this.promotionEnabled,
+    );
+  }
+}
+
+class NotificationPreferencesNotifier extends Notifier<NotificationPreferences> {
+  @override
+  NotificationPreferences build() {
+    return const NotificationPreferences();
+  }
+
+  void toggleBooking(bool value) {
+    state = state.copyWith(bookingEnabled: value);
+  }
+
+  void toggleReminder(bool value) {
+    state = state.copyWith(reminderEnabled: value);
+  }
+
+  void toggleCredit(bool value) {
+    state = state.copyWith(creditEnabled: value);
+  }
+
+  void togglePromotion(bool value) {
+    state = state.copyWith(promotionEnabled: value);
+  }
+
+  void resetToDefault() {
+    state = const NotificationPreferences();
+  }
+}
 
 class NotificationScreen extends ConsumerWidget {
   const NotificationScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: AppSpacing.lg),
-            // Header
-            const _HeaderSection(),
-            const SizedBox(height: AppSpacing.xl),
-            // Notifications List
-            const _NotificationsSection(),
-            const SizedBox(height: AppSpacing.lg),
-          ],
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: AppSpacing.lg),
+              const _HeaderSection(),
+              const SizedBox(height: AppSpacing.xl),
+              const _NotificationPreferencesSection(),
+              const SizedBox(height: AppSpacing.xl),
+              const _NotificationsSection(),
+              const SizedBox(height: AppSpacing.lg),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _HeaderSection extends ConsumerWidget {
+class _HeaderSection extends StatelessWidget {
   const _HeaderSection();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final notificationsAsync = ref.watch(notificationNotifierProvider);
-
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Updates', style: AppTypography.h2),
-              const SizedBox(height: AppSpacing.xxs),
-              Text(
-                'Your latest studio news and reminders.',
-                style: AppTypography.bodyMd.copyWith(
-                  color: AppColors.onSurfaceVariant,
-                ),
-              ),
-            ],
+          IconButton(
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go(AppRoutes.profile);
+              }
+            },
+            icon: const Icon(Icons.arrow_back),
+            color: AppColors.onSurface,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints.tightFor(width: 40, height: 40),
           ),
-          // Mark all as read button
-          notificationsAsync.when(
-            data: (notifications) {
-              final hasUnread = notifications.any((n) => !n.isRead);
-              if (!hasUnread) return const SizedBox.shrink();
-              return TextButton(
-                onPressed: () {
-                  ref
-                      .read(notificationNotifierProvider.notifier)
-                      .markAllAsRead();
-                },
-                style: TextButton.styleFrom(
-                  foregroundColor: AppColors.secondary,
-                  textStyle: AppTypography.labelCaps,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.sm,
-                    vertical: AppSpacing.xs,
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Notifications', style: AppTypography.h2),
+                const SizedBox(height: AppSpacing.xxs),
+                Text(
+                  'Manage your notification preferences and view updates.',
+                  style: AppTypography.bodyMd.copyWith(
+                    color: AppColors.onSurfaceVariant,
                   ),
                 ),
-                child: const Text('Mark all read'),
-              );
-            },
-            loading: () => const SizedBox.shrink(),
-            error: (e, st) => const SizedBox.shrink(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NotificationPreferencesSection extends ConsumerWidget {
+  const _NotificationPreferencesSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final preferences = ref.watch(notificationPreferencesProvider);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Preferences', style: AppTypography.h3),
+          const SizedBox(height: AppSpacing.md),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(AppRadius.card),
+              border: Border.all(color: AppColors.surfaceVariant),
+            ),
+            child: Column(
+              children: [
+                _PreferenceToggle(
+                  icon: Icons.check_circle_outline,
+                  title: 'Booking Confirmations',
+                  subtitle: 'Get notified when booking is successful',
+                  value: preferences.bookingEnabled,
+                  onChanged: (value) {
+                    ref
+                        .read(notificationPreferencesProvider.notifier)
+                        .toggleBooking(value);
+                  },
+                ),
+                Divider(
+                  height: 1,
+                  color: AppColors.outlineVariant.withAlpha(128),
+                  indent: AppSpacing.screenPadding,
+                  endIndent: AppSpacing.screenPadding,
+                ),
+                _PreferenceToggle(
+                  icon: Icons.schedule_outlined,
+                  title: 'Class Reminders',
+                  subtitle: 'Reminders before your scheduled classes',
+                  value: preferences.reminderEnabled,
+                  onChanged: (value) {
+                    ref
+                        .read(notificationPreferencesProvider.notifier)
+                        .toggleReminder(value);
+                  },
+                ),
+                Divider(
+                  height: 1,
+                  color: AppColors.outlineVariant.withAlpha(128),
+                  indent: AppSpacing.screenPadding,
+                  endIndent: AppSpacing.screenPadding,
+                ),
+                _PreferenceToggle(
+                  icon: Icons.monetization_on_outlined,
+                  title: 'Credit Alerts',
+                  subtitle: 'Low credit and balance warnings',
+                  value: preferences.creditEnabled,
+                  onChanged: (value) {
+                    ref
+                        .read(notificationPreferencesProvider.notifier)
+                        .toggleCredit(value);
+                  },
+                ),
+                Divider(
+                  height: 1,
+                  color: AppColors.outlineVariant.withAlpha(128),
+                  indent: AppSpacing.screenPadding,
+                  endIndent: AppSpacing.screenPadding,
+                ),
+                _PreferenceToggle(
+                  icon: Icons.campaign_outlined,
+                  title: 'Promotions',
+                  subtitle: 'Special offers and studio updates',
+                  value: preferences.promotionEnabled,
+                  onChanged: (value) {
+                    ref
+                        .read(notificationPreferencesProvider.notifier)
+                        .togglePromotion(value);
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PreferenceToggle extends StatelessWidget {
+  const _PreferenceToggle({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppColors.surfaceContainerHigh,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 20, color: AppColors.onSurfaceVariant),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: AppTypography.bodyMd),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: AppTypography.bodySm.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeThumbColor: AppColors.primary,
           ),
         ],
       ),
@@ -100,29 +305,79 @@ class _NotificationsSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final notificationsAsync = ref.watch(notificationNotifierProvider);
 
-    return notificationsAsync.when(
-      data: (notifications) {
-        if (notifications.isEmpty) {
-          return const _EmptyNotifications();
-        }
-        return Column(
-          children: notifications.asMap().entries.map((entry) {
-            final index = entry.key;
-            final notification = entry.value;
-            final isLast = index == notifications.length - 1;
-            return Padding(
-              padding: EdgeInsets.only(
-                left: AppSpacing.screenPadding,
-                right: AppSpacing.screenPadding,
-                bottom: isLast ? 0 : AppSpacing.sm,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Recent Updates', style: AppTypography.h3),
+              notificationsAsync.when(
+                data: (notifications) {
+                  final hasUnread = notifications.any((n) => !n.isRead);
+                  if (!hasUnread) return const SizedBox.shrink();
+                  return TextButton(
+                    onPressed: () {
+                      ref
+                          .read(notificationNotifierProvider.notifier)
+                          .markAllAsRead();
+                    },
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.secondary,
+                      textStyle: AppTypography.labelCaps,
+                    ),
+                    child: const Text('Mark all read'),
+                  );
+                },
+                loading: () => const SizedBox.shrink(),
+                error: (e, _) => const SizedBox.shrink(),
               ),
-              child: _NotificationCard(notification: notification),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        notificationsAsync.when(
+          data: (notifications) {
+            if (notifications.isEmpty) {
+              return const Padding(
+                padding: EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+                child: AppEmptyState(
+                  icon: Icons.notifications_none_outlined,
+                  title: 'No notifications yet',
+                  subtitle: 'Updates from the studio will appear here',
+                ),
+              );
+            }
+            return Column(
+              children: notifications.asMap().entries.map((entry) {
+                final index = entry.key;
+                final notification = entry.value;
+                final isLast = index == notifications.length - 1;
+                return Padding(
+                  padding: EdgeInsets.only(
+                    left: AppSpacing.screenPadding,
+                    right: AppSpacing.screenPadding,
+                    bottom: isLast ? 0 : AppSpacing.sm,
+                  ),
+                  child: _NotificationCard(notification: notification),
+                );
+              }).toList(),
             );
-          }).toList(),
-        );
-      },
-      loading: () => const _LoadingNotifications(),
-      error: (e, st) => const _ErrorNotifications(),
+          },
+          loading: () => const Padding(
+            padding: EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+            child: AppLoadingState(),
+          ),
+          error: (e, _) => Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+            child: AppErrorState(
+              onRetry: () => ref.invalidate(notificationNotifierProvider),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -156,7 +411,6 @@ class _NotificationCard extends ConsumerWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Unread Indicator
               if (!notification.isRead)
                 Padding(
                   padding: const EdgeInsets.only(
@@ -166,21 +420,17 @@ class _NotificationCard extends ConsumerWidget {
                   child: Container(
                     width: 8,
                     height: 8,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: AppColors.secondary,
                       shape: BoxShape.circle,
                     ),
                   ),
                 ),
-              // Icon
               Container(
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: _getIconBackground(
-                    notification.type,
-                    notification.isRead,
-                  ),
+                  color: _getIconBackground(notification.type, notification.isRead),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -190,12 +440,10 @@ class _NotificationCard extends ConsumerWidget {
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
-              // Content
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Title Row
                     Row(
                       children: [
                         Expanded(
@@ -221,7 +469,6 @@ class _NotificationCard extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: AppSpacing.xxs),
-                    // Message
                     Text(
                       notification.message,
                       style: AppTypography.bodySm.copyWith(
@@ -230,10 +477,10 @@ class _NotificationCard extends ConsumerWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: AppSpacing.sm),
-                    // Actions (only for unread)
-                    if (!notification.isRead)
+                    if (!notification.isRead) ...[
+                      const SizedBox(height: AppSpacing.sm),
                       _NotificationActions(notification: notification),
+                    ],
                   ],
                 ),
               ),
@@ -245,19 +492,15 @@ class _NotificationCard extends ConsumerWidget {
   }
 
   void _handleNotificationTap(BuildContext context, WidgetRef ref) {
-    // Mark as read when tapped
     if (!notification.isRead) {
       ref
           .read(notificationNotifierProvider.notifier)
           .markAsRead(notification.id);
     }
 
-    // Navigate based on type
     switch (notification.type) {
       case NotificationType.classReminder:
       case NotificationType.bookingConfirmed:
-        // Navigate to booking confirmation if we have booking info
-        // For now, show a snackbar as placeholder
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(notification.title),
@@ -266,13 +509,7 @@ class _NotificationCard extends ConsumerWidget {
           ),
         );
         break;
-      case NotificationType.packageExpiring:
-      case NotificationType.promotion:
-        // Navigate to package screen
-        context.go(AppRoutes.package);
-        break;
       default:
-        // Just mark as read, no navigation
         break;
     }
   }
@@ -281,7 +518,6 @@ class _NotificationCard extends ConsumerWidget {
     return switch (type) {
       NotificationType.classReminder => Icons.spa_outlined,
       NotificationType.bookingConfirmed => Icons.check_circle_outline,
-      NotificationType.packageExpiring => Icons.warning_amber_outlined,
       NotificationType.creditRunningLow => Icons.monetization_on_outlined,
       NotificationType.promotion => Icons.campaign_outlined,
       NotificationType.scheduleUpdate => Icons.calendar_today_outlined,
@@ -293,7 +529,6 @@ class _NotificationCard extends ConsumerWidget {
       return switch (type) {
         NotificationType.classReminder => AppColors.secondaryContainer,
         NotificationType.bookingConfirmed => AppColors.secondaryContainer,
-        NotificationType.packageExpiring => AppColors.errorContainer,
         NotificationType.creditRunningLow => AppColors.errorContainer,
         NotificationType.promotion => AppColors.tertiaryContainer,
         NotificationType.scheduleUpdate => AppColors.surfaceContainerHigh,
@@ -307,7 +542,6 @@ class _NotificationCard extends ConsumerWidget {
       return switch (type) {
         NotificationType.classReminder => AppColors.onSecondaryContainer,
         NotificationType.bookingConfirmed => AppColors.onSecondaryContainer,
-        NotificationType.packageExpiring => AppColors.onErrorContainer,
         NotificationType.creditRunningLow => AppColors.onErrorContainer,
         NotificationType.promotion => AppColors.onTertiaryFixed,
         NotificationType.scheduleUpdate => AppColors.onSurfaceVariant,
@@ -329,42 +563,27 @@ class _NotificationCard extends ConsumerWidget {
     } else if (diff.inDays < 7) {
       return '${diff.inDays}d ago';
     } else {
-      const months = [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'May',
-        'Jun',
-        'Jul',
-        'Aug',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Dec',
-      ];
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       return '${months[date.month - 1]} ${date.day}';
     }
   }
 }
 
-class _NotificationActions extends StatelessWidget {
+class _NotificationActions extends ConsumerWidget {
   const _NotificationActions({required this.notification});
 
   final NotificationItemModel notification;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Row(
       children: [
         TextButton(
           onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text('View details coming soon'),
-                backgroundColor: AppColors.surfaceContainerHigh,
-              ),
-            );
+            ref
+                .read(notificationNotifierProvider.notifier)
+                .markAsRead(notification.id);
           },
           style: TextButton.styleFrom(
             foregroundColor: AppColors.secondary,
@@ -381,10 +600,13 @@ class _NotificationActions extends StatelessWidget {
         const SizedBox(width: AppSpacing.md),
         TextButton(
           onPressed: () {
+            ref
+                .read(notificationNotifierProvider.notifier)
+                .deleteNotification(notification.id);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: const Text('Action coming soon'),
-                backgroundColor: AppColors.surfaceContainerHigh,
+                content: const Text('Notification dismissed'),
+                backgroundColor: AppColors.secondary,
               ),
             );
           },
@@ -401,145 +623,6 @@ class _NotificationActions extends StatelessWidget {
           child: const Text('Dismiss'),
         ),
       ],
-    );
-  }
-}
-
-class _EmptyNotifications extends StatelessWidget {
-  const _EmptyNotifications();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(AppSpacing.screenPadding),
-      child: Center(
-        child: Column(
-          children: [
-            const SizedBox(height: AppSpacing.xl),
-            Icon(
-              Icons.notifications_none_outlined,
-              size: 48,
-              color: AppColors.onSurfaceVariant.withAlpha(128),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              'No notifications yet',
-              style: AppTypography.bodyMd.copyWith(
-                color: AppColors.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              'Updates from the studio will appear here',
-              style: AppTypography.bodySm.copyWith(
-                color: AppColors.onSurfaceVariant.withAlpha(179),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _LoadingNotifications extends StatelessWidget {
-  const _LoadingNotifications();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
-      child: Column(
-        children: List.generate(
-          3,
-          (index) => Padding(
-            padding: EdgeInsets.only(bottom: index < 2 ? AppSpacing.sm : 0),
-            child: Container(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceContainerLowest,
-                borderRadius: BorderRadius.circular(AppRadius.lg),
-                border: Border.all(color: AppColors.surfaceVariant),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceContainerHigh,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: double.infinity,
-                          height: 14,
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceContainerHigh,
-                            borderRadius: BorderRadius.circular(AppRadius.sm),
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                        Container(
-                          width: 180,
-                          height: 12,
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceContainerHigh,
-                            borderRadius: BorderRadius.circular(AppRadius.sm),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ErrorNotifications extends StatelessWidget {
-  const _ErrorNotifications();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(AppSpacing.screenPadding),
-      child: Center(
-        child: Column(
-          children: [
-            const SizedBox(height: AppSpacing.lg),
-            Icon(
-              Icons.error_outline,
-              size: 48,
-              color: AppColors.onSurfaceVariant.withAlpha(128),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              'We could not load notifications',
-              style: AppTypography.bodyMd.copyWith(
-                color: AppColors.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              'Please check your connection and try again',
-              style: AppTypography.bodySm.copyWith(
-                color: AppColors.onSurfaceVariant.withAlpha(179),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

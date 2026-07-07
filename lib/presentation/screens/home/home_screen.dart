@@ -9,18 +9,24 @@ import '../../../core/theme/app_shadows.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/extensions/mood_extensions.dart';
 import '../../../data/models/booking_model.dart';
+import '../../../data/models/app_enums.dart';
 import '../../../data/models/yoga_class_model.dart';
-import '../../../data/models/membership_package_model.dart';
+import '../../../data/models/schedule_model.dart';
+import '../../../data/models/mood_entry_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/booking_provider.dart';
 import '../../providers/class_provider.dart';
-import '../../providers/membership_provider.dart';
+import '../../providers/instructor_provider.dart';
 import '../../providers/wallet_provider.dart';
 import '../../providers/schedule_provider.dart';
+import '../../providers/mood_provider.dart';
 import '../../../shared/widgets/buttons/app_button.dart';
 import '../../../shared/widgets/cards/app_card.dart';
 import '../../../shared/widgets/layout/section_header.dart';
+import '../../../shared/widgets/state/app_state_widgets.dart';
+import '../../../shared/widgets/images/optimized_image.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -34,26 +40,19 @@ class HomeScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: AppSpacing.lg),
-            // Greeting Section
             const _GreetingSection(),
             const SizedBox(height: AppSpacing.xl),
-            // Hero Section
+            const _MoodQuickCheckSection(),
+            const SizedBox(height: AppSpacing.xl),
             const _HeroSection(),
             const SizedBox(height: AppSpacing.xxl),
-            // Credit Summary
             const _CreditSummarySection(),
             const SizedBox(height: AppSpacing.xxl),
-            // Upcoming Booking
             const _UpcomingBookingSection(),
             const SizedBox(height: AppSpacing.xxl),
-            // Featured Classes
             const _FeaturedClassesSection(),
             const SizedBox(height: AppSpacing.xxl),
-            // Quick Actions
             const _QuickActionsSection(),
-            const SizedBox(height: AppSpacing.xxl),
-            // Package Promotion
-            const _PackagePromotionSection(),
             const SizedBox(height: AppSpacing.lg),
           ],
         ),
@@ -86,7 +85,7 @@ class _GreetingSection extends ConsumerWidget {
             data: (user) =>
                 Text(user?.fullName ?? 'Member', style: AppTypography.h1),
             loading: () => Text('Member', style: AppTypography.h1),
-            error: (_, _) => Text('Member', style: AppTypography.h1),
+            error: (e, _) => Text('Member', style: AppTypography.h1),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
@@ -108,6 +107,246 @@ class _GreetingSection extends ConsumerWidget {
   }
 }
 
+class _MoodQuickCheckSection extends ConsumerWidget {
+  const _MoodQuickCheckSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final todayMoodAsync = ref.watch(todayMoodEntryProvider);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+      child: todayMoodAsync.when(
+        data: (mood) {
+          if (mood == null) {
+            return _NoMoodCard();
+          }
+          return _TodayMoodMiniCard(mood: mood);
+        },
+        loading: () => const _MoodCardLoading(),
+        error: (_, _) => _NoMoodCard(),
+      ),
+    );
+  }
+}
+
+class _NoMoodCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.push(AppRoutes.moodTracker),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF735A3A), // Warm brown/terracotta base
+              Color(0xFF8B6914), // Gold accent
+            ],
+          ),
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          boxShadow: AppShadows.elevated,
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(26),
+                borderRadius: BorderRadius.circular(AppRadius.md),
+              ),
+              child: const Icon(
+                Icons.mood_outlined,
+                color: Colors.white,
+                size: 28,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'How are you feeling?',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xxs),
+                  Text(
+                    'Track your mood for personalized recommendations',
+                    style: TextStyle(
+                      color: Colors.white.withAlpha(204),
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(26),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+              ),
+              child: const Icon(
+                Icons.arrow_forward_ios,
+                color: Colors.white,
+                size: 16,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TodayMoodMiniCard extends StatelessWidget {
+  const _TodayMoodMiniCard({required this.mood});
+
+  final MoodEntryModel mood;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.push(AppRoutes.moodTracker),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          color: Theme.of(context).extension<OnnaThemeTokens>()!.cardSurface,
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          border: Border.all(color: AppColors.surfaceVariant),
+          boxShadow: AppShadows.subtle,
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: AppColors.primaryContainer.withAlpha(77),
+                borderRadius: BorderRadius.circular(AppRadius.md),
+              ),
+              child: Center(
+                child: Text(
+                  mood.mood.emoji,
+                  style: const TextStyle(fontSize: 24),
+                ),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Today's mood: ${mood.mood.label}",
+                    style: AppTypography.bodyMd.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xxs),
+                  Text(
+                    'Tap to update your mood',
+                    style: AppTypography.bodySm.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.xxs,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.secondaryContainer,
+                borderRadius: BorderRadius.circular(AppRadius.pill),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.edit_outlined,
+                    size: 14,
+                    color: AppColors.onSecondaryContainer,
+                  ),
+                  const SizedBox(width: AppSpacing.xxs),
+                  Text(
+                    'Update',
+                    style: AppTypography.labelCaps.copyWith(
+                      fontSize: 10,
+                      color: AppColors.onSecondaryContainer,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MoodCardLoading extends StatelessWidget {
+  const _MoodCardLoading();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 80,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: AppColors.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 140,
+                  height: 16,
+                  color: AppColors.surfaceContainerLow,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Container(
+                  width: 200,
+                  height: 12,
+                  color: AppColors.surfaceContainerLow,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _HeroSection extends StatelessWidget {
   const _HeroSection();
 
@@ -121,55 +360,53 @@ class _HeroSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Hero Image
-            Container(
+            SizedBox(
               height: 200,
               width: double.infinity,
-              decoration: const BoxDecoration(
-                color: AppColors.surfaceContainerHigh,
-                borderRadius: BorderRadius.vertical(
-                  top: Radius.circular(AppRadius.card),
-                ),
-              ),
               child: Stack(
                 children: [
-                  // Placeholder gradient
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          AppColors.secondaryContainer.withAlpha(128),
-                          AppColors.tertiaryContainer.withAlpha(128),
-                        ],
+                  Positioned.fill(
+                    child: OptimizedImage(
+                      imageUrl: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=800',
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(AppRadius.card),
                       ),
-                    ),
-                  ),
-                  // Center content
-                  Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.self_improvement,
-                          size: 64,
-                          color: AppColors.onSurfaceVariant.withAlpha(128),
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                        Text(
-                          'Your sanctuary awaits',
-                          style: AppTypography.bodyMd.copyWith(
-                            color: AppColors.onSurfaceVariant.withAlpha(179),
+                      errorPlaceholder: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              AppColors.secondaryContainer.withAlpha(128),
+                              AppColors.tertiaryContainer.withAlpha(128),
+                            ],
                           ),
                         ),
-                      ],
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.self_improvement,
+                                size: 64,
+                                color: AppColors.onSurfaceVariant.withAlpha(128),
+                              ),
+                              const SizedBox(height: AppSpacing.sm),
+                              Text(
+                                'Your sanctuary awaits',
+                                style: AppTypography.bodyMd.copyWith(
+                                  color: AppColors.onSurfaceVariant.withAlpha(179),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-            // Content
             Padding(
               padding: const EdgeInsets.all(AppSpacing.lg),
               child: Column(
@@ -255,7 +492,7 @@ class _CreditSummarySection extends ConsumerWidget {
               ),
             ),
             loading: () => const _LoadingCreditCard(),
-            error: (_, _) => const SizedBox.shrink(),
+            error: (e, _) => const SizedBox.shrink(),
           ),
         ],
       ),
@@ -275,13 +512,13 @@ class _LoadingCreditCard extends StatelessWidget {
         children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              _ShimmerText(width: 60, height: 36),
-              SizedBox(height: AppSpacing.xs),
-              _ShimmerText(width: 100, height: 16),
+            children: [
+              _ShimmerBox(width: 60, height: 36),
+              const SizedBox(height: AppSpacing.xs),
+              _ShimmerBox(width: 100, height: 16),
             ],
           ),
-          const _ShimmerBox(width: 60, height: 32, isCircle: true),
+          _ShimmerBox(width: 60, height: 32, isCircle: true),
         ],
       ),
     );
@@ -294,6 +531,7 @@ class _UpcomingBookingSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bookingsAsync = ref.watch(upcomingBookingsProvider);
+    final schedulesAsync = ref.watch(allSchedulesProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -311,13 +549,31 @@ class _UpcomingBookingSection extends ConsumerWidget {
         const SizedBox(height: AppSpacing.md),
         bookingsAsync.when(
           data: (bookings) {
-            if (bookings.isEmpty) {
+            // Get schedules to check expiration
+            final schedules = schedulesAsync.when(
+              data: (s) => s,
+              loading: () => <ScheduleModel>[],
+              error: (e, s) => <ScheduleModel>[],
+            );
+
+            // Filter out expired bookings
+            final scheduleMap = {for (var sched in schedules) sched.id: sched};
+            final activeBookings = bookings.where((b) {
+              final schedule = scheduleMap[b.scheduleId];
+              // If schedule is expired, don't show in upcoming
+              if (schedule != null && schedule.isExpired) {
+                return false;
+              }
+              return true;
+            }).toList();
+
+            if (activeBookings.isEmpty) {
               return const _EmptyUpcomingBooking();
             }
-            return _UpcomingBookingCard(booking: bookings.first);
+            return _UpcomingBookingCard(booking: activeBookings.first);
           },
           loading: () => const _LoadingUpcomingBooking(),
-          error: (_, _) => const _EmptyUpcomingBooking(),
+          error: (e, _) => const _EmptyUpcomingBooking(),
         ),
       ],
     );
@@ -331,11 +587,8 @@ class _UpcomingBookingCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Get class and schedule data
     final classAsync = ref.watch(classByIdProvider(booking.classId));
-    final schedulesAsync = ref.watch(
-      schedulesByClassIdProvider(booking.classId),
-    );
+    final scheduleAsync = ref.watch(scheduleByIdProvider(booking.scheduleId));
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
@@ -345,17 +598,36 @@ class _UpcomingBookingCard extends ConsumerWidget {
           children: [
             Row(
               children: [
-                // Instructor avatar placeholder
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceContainerHigh,
-                    borderRadius: BorderRadius.circular(AppRadius.pill),
+                classAsync.when(
+                  data: (yogaClass) => OptimizedImage(
+                    imageUrl: yogaClass?.imageUrl ?? '',
+                    width: 56,
+                    height: 56,
+                    errorPlaceholder: Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceContainerHigh,
+                        borderRadius: BorderRadius.circular(AppRadius.pill),
+                      ),
+                      child: Icon(
+                        Icons.person,
+                        color: AppColors.onSurfaceVariant.withAlpha(128),
+                      ),
+                    ),
                   ),
-                  child: Icon(
-                    Icons.person,
-                    color: AppColors.onSurfaceVariant.withAlpha(128),
+                  loading: () => _ShimmerBox(width: 56, height: 56, isCircle: true),
+                  error: (e, _) => Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceContainerHigh,
+                      borderRadius: BorderRadius.circular(AppRadius.pill),
+                    ),
+                    child: Icon(
+                      Icons.person,
+                      color: AppColors.onSurfaceVariant.withAlpha(128),
+                    ),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
@@ -363,10 +635,21 @@ class _UpcomingBookingCard extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'In 45 Minutes',
-                        style: AppTypography.labelCaps.copyWith(
-                          color: AppColors.onTertiaryContainer,
+                      scheduleAsync.when(
+                        data: (schedule) => Text(
+                          schedule == null
+                              ? 'Upcoming'
+                              : _formatRelativeSchedule(schedule),
+                          style: AppTypography.labelCaps.copyWith(
+                            color: AppColors.onTertiaryContainer,
+                          ),
+                        ),
+                        loading: () => _ShimmerBox(width: 80),
+                        error: (e, _) => Text(
+                          'Upcoming',
+                          style: AppTypography.labelCaps.copyWith(
+                            color: AppColors.onTertiaryContainer,
+                          ),
                         ),
                       ),
                       const SizedBox(height: AppSpacing.xxs),
@@ -375,15 +658,12 @@ class _UpcomingBookingCard extends ConsumerWidget {
                           yogaClass?.title ?? 'Class',
                           style: AppTypography.h3,
                         ),
-                        loading: () => const _ShimmerText(width: 120),
-                        error: (_, _) => Text('Class', style: AppTypography.h3),
+                        loading: () => _ShimmerBox(width: 120),
+                        error: (e, _) => Text('Class', style: AppTypography.h3),
                       ),
                       const SizedBox(height: AppSpacing.xs),
-                      schedulesAsync.when(
-                        data: (schedules) {
-                          final schedule = schedules.isNotEmpty
-                              ? schedules.first
-                              : null;
+                      scheduleAsync.when(
+                        data: (schedule) {
                           return Row(
                             children: [
                               Icon(
@@ -395,30 +675,20 @@ class _UpcomingBookingCard extends ConsumerWidget {
                               Text(
                                 schedule != null
                                     ? '${schedule.startTime} - ${schedule.endTime}'
-                                    : '10:00 AM - 11:15 AM',
+                                    : 'Time to be confirmed',
                                 style: AppTypography.bodyMd,
                               ),
                             ],
                           );
                         },
-                        loading: () => const _ShimmerText(width: 100),
-                        error: (_, _) => Text(
-                          '10:00 AM - 11:15 AM',
+                        loading: () => _ShimmerBox(width: 100),
+                        error: (e, _) => Text(
+                          'Time to be confirmed',
                           style: AppTypography.bodyMd,
                         ),
                       ),
                       const SizedBox(height: AppSpacing.xxs),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.person_outline,
-                            size: 16,
-                            color: AppColors.onSurfaceVariant,
-                          ),
-                          const SizedBox(width: AppSpacing.xs),
-                          Text('with Elena R.', style: AppTypography.bodyMd),
-                        ],
-                      ),
+                      _InstructorLine(scheduleAsync: scheduleAsync),
                     ],
                   ),
                 ),
@@ -429,13 +699,96 @@ class _UpcomingBookingCard extends ConsumerWidget {
               width: double.infinity,
               child: AppButton(
                 label: 'Check In',
-                onPressed: () => context.push(AppRoutes.bookingConfirmation),
+                onPressed: () => context.push(
+                  AppRoutes.bookingConfirmationPath(bookingId: booking.id),
+                ),
                 isExpanded: true,
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  String _formatRelativeSchedule(ScheduleModel schedule) {
+    final now = DateTime.now();
+    final startTime = _timeOnDate(schedule.date, schedule.startTime);
+    final difference = startTime.difference(now);
+
+    if (_isSameDay(schedule.date, now)) {
+      if (difference.inMinutes > 0 && difference.inHours < 12) {
+        if (difference.inHours == 0) {
+          return 'In ${difference.inMinutes} min';
+        }
+        return 'In ${difference.inHours} hr';
+      }
+      return 'Today';
+    }
+
+    final tomorrow = DateTime(now.year, now.month, now.day + 1);
+    if (_isSameDay(schedule.date, tomorrow)) {
+      return 'Tomorrow';
+    }
+
+    return _formatShortDate(schedule.date);
+  }
+
+  DateTime _timeOnDate(DateTime date, String time) {
+    final parts = time.split(':');
+    final hour = int.tryParse(parts.first) ?? 0;
+    final minute = parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0;
+    return DateTime(date.year, date.month, date.day, hour, minute);
+  }
+
+  bool _isSameDay(DateTime first, DateTime second) {
+    return first.year == second.year &&
+        first.month == second.month &&
+        first.day == second.day;
+  }
+
+  String _formatShortDate(DateTime date) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    return '${months[date.month - 1]} ${date.day}';
+  }
+}
+
+class _InstructorLine extends ConsumerWidget {
+  const _InstructorLine({required this.scheduleAsync});
+
+  final AsyncValue<ScheduleModel?> scheduleAsync;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Row(
+      children: [
+        Icon(Icons.person_outline, size: 16, color: AppColors.onSurfaceVariant),
+        const SizedBox(width: AppSpacing.xs),
+        scheduleAsync.when(
+          data: (schedule) {
+            if (schedule == null) {
+              return Text('with Instructor', style: AppTypography.bodyMd);
+            }
+            final instructorAsync = ref.watch(
+              instructorByIdProvider(schedule.instructorId),
+            );
+            return instructorAsync.when(
+              data: (instructor) => Text(
+                'with ${instructor?.name ?? 'Instructor'}',
+                style: AppTypography.bodyMd,
+              ),
+              loading: () => _ShimmerBox(width: 96),
+              error: (e, _) =>
+                  Text('with Instructor', style: AppTypography.bodyMd),
+            );
+          },
+          loading: () => _ShimmerBox(width: 96),
+          error: (e, _) => Text('with Instructor', style: AppTypography.bodyMd),
+        ),
+      ],
     );
   }
 }
@@ -490,26 +843,26 @@ class _LoadingUpcomingBooking extends StatelessWidget {
           children: [
             Row(
               children: [
-                const _ShimmerBox(width: 56, height: 56, isCircle: true),
+                _ShimmerBox(width: 56, height: 56, isCircle: true),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      _ShimmerText(width: 80),
-                      SizedBox(height: AppSpacing.sm),
-                      _ShimmerText(width: 140, height: 24),
-                      SizedBox(height: AppSpacing.sm),
-                      _ShimmerText(width: 120),
-                      SizedBox(height: AppSpacing.xs),
-                      _ShimmerText(width: 100),
+                    children: [
+                      _ShimmerBox(width: 80),
+                      const SizedBox(height: AppSpacing.sm),
+                      _ShimmerBox(width: 140, height: 24),
+                      const SizedBox(height: AppSpacing.sm),
+                      _ShimmerBox(width: 120),
+                      const SizedBox(height: AppSpacing.xs),
+                      _ShimmerBox(width: 100),
                     ],
                   ),
                 ),
               ],
             ),
             const SizedBox(height: AppSpacing.lg),
-            const _ShimmerBox(height: 52),
+            _ShimmerBox(height: 52),
           ],
         ),
       ),
@@ -541,34 +894,45 @@ class _FeaturedClassesSection extends ConsumerWidget {
         SizedBox(
           height: 280,
           child: classesAsync.when(
-            data: (classes) => ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.screenPadding,
-              ),
-              itemCount: classes.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: EdgeInsets.only(
-                    right: index < classes.length - 1 ? AppSpacing.gutter : 0,
-                  ),
-                  child: _ClassCard(classModel: classes[index]),
+            data: (classes) {
+              if (classes.isEmpty) {
+                return const Center(
+                  child: Text('No featured classes'),
                 );
-              },
-            ),
+              }
+              return ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.screenPadding,
+                ),
+                itemCount: classes.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      right: index < classes.length - 1 ? AppSpacing.gutter : 0,
+                    ),
+                    child: _ClassCard(classModel: classes[index]),
+                  );
+                },
+              );
+            },
             loading: () => ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.screenPadding,
               ),
               itemCount: 3,
-              itemBuilder: (context, index) => const Padding(
+              itemBuilder: (context, index) => Padding(
                 padding: EdgeInsets.only(right: AppSpacing.gutter),
-                child: _LoadingClassCard(),
+                child: const _LoadingClassCard(),
               ),
             ),
-            error: (_, _) =>
-                const Center(child: Text('Failed to load classes')),
+            error: (e, _) => const Center(
+              child: AppErrorState(
+                title: 'Failed to load classes',
+                subtitle: '',
+              ),
+            ),
           ),
         ),
       ],
@@ -576,15 +940,17 @@ class _FeaturedClassesSection extends ConsumerWidget {
   }
 }
 
-class _ClassCard extends StatelessWidget {
+class _ClassCard extends ConsumerWidget {
   const _ClassCard({required this.classModel});
 
   final YogaClassModel classModel;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final schedulesAsync = ref.watch(schedulesByClassIdProvider(classModel.id));
+
     return GestureDetector(
-      onTap: () => context.push('${AppRoutes.classDetail}/${classModel.id}'),
+      onTap: () => context.push(AppRoutes.classDetailPath(classModel.id)),
       child: Container(
         width: 280,
         decoration: BoxDecoration(
@@ -596,40 +962,38 @@ class _ClassCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Class image placeholder
-            Container(
+            SizedBox(
               height: 140,
               width: double.infinity,
-              decoration: BoxDecoration(
-                color: AppColors.surfaceContainerHigh,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(AppRadius.card),
-                ),
-              ),
               child: Stack(
                 children: [
-                  // Placeholder gradient
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          AppColors.primaryContainer.withAlpha(77),
-                          AppColors.secondaryContainer.withAlpha(77),
-                        ],
+                  Positioned.fill(
+                    child: OptimizedImage(
+                      imageUrl: classModel.imageUrl,
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(AppRadius.card),
+                      ),
+                      errorPlaceholder: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              AppColors.primaryContainer.withAlpha(77),
+                              AppColors.secondaryContainer.withAlpha(77),
+                            ],
+                          ),
+                        ),
+                        child: Center(
+                          child: Icon(
+                            Icons.self_improvement,
+                            size: 48,
+                            color: AppColors.onSurfaceVariant.withAlpha(128),
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                  // Icon
-                  Center(
-                    child: Icon(
-                      Icons.self_improvement,
-                      size: 48,
-                      color: AppColors.onSurfaceVariant.withAlpha(128),
-                    ),
-                  ),
-                  // Mood indicator
                   Positioned(
                     top: AppSpacing.sm,
                     right: AppSpacing.sm,
@@ -639,17 +1003,17 @@ class _ClassCard extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: _getIntensityColor(classModel.intensity),
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 1),
-                        boxShadow: const [
-                          BoxShadow(color: Color(0x29000000), blurRadius: 4),
-                        ],
+                        border: Border.all(
+                          color: AppColors.surfaceContainerLowest,
+                          width: 1,
+                        ),
+                        boxShadow: AppShadows.subtle,
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            // Content
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(AppSpacing.lg),
@@ -664,14 +1028,24 @@ class _ClassCard extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     Text(
-                      '${classModel.category.name} · ${classModel.durationMinutes} Min',
+                      '${_formatCategory(classModel.category)} - ${classModel.durationMinutes} Min',
                       style: AppTypography.bodyMd,
                     ),
                     const Spacer(),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Today, 6:00 PM', style: AppTypography.labelCaps),
+                        schedulesAsync.when(
+                          data: (schedules) => Text(
+                            _formatNextSchedule(schedules),
+                            style: AppTypography.labelCaps,
+                          ),
+                          loading: () => _ShimmerBox(width: 88),
+                          error: (e, _) => Text(
+                            'Schedule soon',
+                            style: AppTypography.labelCaps,
+                          ),
+                        ),
                         Icon(
                           Icons.arrow_forward,
                           size: 18,
@@ -689,18 +1063,78 @@ class _ClassCard extends StatelessWidget {
     );
   }
 
-  Color _getIntensityColor(dynamic intensity) {
-    final intensityName = intensity.toString().split('.').last;
-    switch (intensityName) {
-      case 'low':
+  Color _getIntensityColor(ClassIntensity intensity) {
+    switch (intensity) {
+      case ClassIntensity.low:
         return AppColors.secondaryContainer;
-      case 'medium':
+      case ClassIntensity.medium:
         return AppColors.primaryFixed;
-      case 'high':
+      case ClassIntensity.high:
         return AppColors.tertiaryContainer;
-      default:
-        return AppColors.secondaryContainer;
     }
+  }
+
+  String _formatCategory(ClassCategory category) {
+    switch (category) {
+      case ClassCategory.yogaFlow:
+        return 'Yoga Flow';
+      case ClassCategory.pilates:
+        return 'Pilates';
+      case ClassCategory.meditation:
+        return 'Meditation';
+      case ClassCategory.breathwork:
+        return 'Breathwork';
+      case ClassCategory.strength:
+        return 'Strength';
+      case ClassCategory.restorative:
+        return 'Restorative';
+    }
+  }
+
+  String _formatNextSchedule(List<ScheduleModel> schedules) {
+    if (schedules.isEmpty) {
+      return 'Schedule soon';
+    }
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final nextSchedule = schedules
+        .where((schedule) {
+          final scheduleDate = DateTime(
+            schedule.date.year,
+            schedule.date.month,
+            schedule.date.day,
+          );
+          return !scheduleDate.isBefore(today);
+        })
+        .fold<ScheduleModel?>(null, (previous, schedule) {
+          if (previous == null) return schedule;
+          if (schedule.date.isBefore(previous.date)) return schedule;
+          return previous;
+        });
+
+    final schedule = nextSchedule ?? schedules.first;
+    if (_isSameDay(schedule.date, now)) {
+      return 'Today, ${schedule.startTime}';
+    }
+    final tomorrow = DateTime(now.year, now.month, now.day + 1);
+    if (_isSameDay(schedule.date, tomorrow)) {
+      return 'Tomorrow, ${schedule.startTime}';
+    }
+    return '${_formatShortDate(schedule.date)}, ${schedule.startTime}';
+  }
+
+  bool _isSameDay(DateTime first, DateTime second) {
+    return first.year == second.year &&
+        first.month == second.month &&
+        first.day == second.day;
+  }
+
+  String _formatShortDate(DateTime date) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    return '${months[date.month - 1]} ${date.day}';
   }
 }
 
@@ -734,12 +1168,12 @@ class _LoadingClassCard extends StatelessWidget {
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                _ShimmerText(width: 140),
-                SizedBox(height: AppSpacing.sm),
-                _ShimmerText(width: 100),
-                SizedBox(height: AppSpacing.lg),
-                _ShimmerText(width: 80),
+              children: [
+                _ShimmerBox(width: 140),
+                const SizedBox(height: AppSpacing.sm),
+                _ShimmerBox(width: 100),
+                const SizedBox(height: AppSpacing.lg),
+                _ShimmerBox(width: 80),
               ],
             ),
           ),
@@ -783,19 +1217,9 @@ class _QuickActionsSection extends StatelessWidget {
                 onTap: () => context.go(AppRoutes.schedule),
               ),
               _QuickActionCard(
-                icon: Icons.payments,
-                label: 'Package',
-                onTap: () => context.go(AppRoutes.package),
-              ),
-              _QuickActionCard(
                 icon: Icons.account_balance_wallet,
-                label: 'My Credit',
-                onTap: () => context.push(AppRoutes.wallet),
-              ),
-              _QuickActionCard(
-                icon: Icons.location_on,
-                label: 'Location',
-                onTap: () => context.push(AppRoutes.location),
+                label: 'Top Up',
+                onTap: () => context.push(AppRoutes.topUp),
               ),
             ],
           ),
@@ -847,138 +1271,8 @@ class _QuickActionCard extends StatelessWidget {
   }
 }
 
-class _PackagePromotionSection extends ConsumerWidget {
-  const _PackagePromotionSection();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final packageAsync = ref.watch(popularPackageProvider);
-
-    return packageAsync.when(
-      data: (package) {
-        if (package == null) return const SizedBox.shrink();
-        return _PackagePromotionCard(package: package);
-      },
-      loading: () => const SizedBox.shrink(),
-      error: (_, _) => const SizedBox.shrink(),
-    );
-  }
-}
-
-class _PackagePromotionCard extends StatelessWidget {
-  const _PackagePromotionCard({required this.package});
-
-  final MembershipPackageModel package;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [AppColors.tertiaryContainer, AppColors.secondaryContainer],
-          ),
-          borderRadius: BorderRadius.circular(AppRadius.card),
-          boxShadow: AppShadows.ambient,
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Popular Choice',
-                          style: AppTypography.labelCaps.copyWith(
-                            color: AppColors.onTertiaryFixed,
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.xs),
-                        Text(
-                          package.name,
-                          style: AppTypography.h3.copyWith(
-                            color: AppColors.onTertiaryFixed,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.md,
-                      vertical: AppSpacing.sm,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.onTertiaryFixed.withAlpha(51),
-                      borderRadius: BorderRadius.circular(AppRadius.pill),
-                    ),
-                    child: Text(
-                      package.hasUnlimitedCredits
-                          ? 'Unlimited'
-                          : '${package.credits} Credits',
-                      style: AppTypography.labelCaps.copyWith(
-                        color: AppColors.onTertiaryFixed,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                package.description,
-                style: AppTypography.bodyMd.copyWith(
-                  color: AppColors.onTertiaryFixed.withAlpha(204),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${package.validityDays} Days',
-                          style: AppTypography.h3.copyWith(
-                            color: AppColors.onTertiaryFixed,
-                          ),
-                        ),
-                        Text(
-                          'Validity',
-                          style: AppTypography.labelCaps.copyWith(
-                            color: AppColors.onTertiaryFixed.withAlpha(179),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  AppButton(
-                    label: 'Get Package',
-                    onPressed: () => context.go(AppRoutes.package),
-                    isExpanded: false,
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// Helper widgets for shimmer loading states
 class _ShimmerBox extends StatelessWidget {
-  const _ShimmerBox({this.width, required this.height, this.isCircle = false});
+  const _ShimmerBox({this.width, this.height = 16, this.isCircle = false});
 
   final double? width;
   final double height;
@@ -994,25 +1288,6 @@ class _ShimmerBox extends StatelessWidget {
         borderRadius: isCircle
             ? BorderRadius.circular(height / 2)
             : BorderRadius.circular(AppRadius.sm),
-      ),
-    );
-  }
-}
-
-class _ShimmerText extends StatelessWidget {
-  const _ShimmerText({this.width = 100, this.height = 16});
-
-  final double width;
-  final double height;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
     );
   }

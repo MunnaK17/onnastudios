@@ -10,11 +10,16 @@ class AppTextField extends StatelessWidget {
     this.hint,
     this.errorText,
     this.obscureText = false,
+    this.enabled = true,
+    this.readOnly = false,
     this.prefixIcon,
     this.suffixIcon,
     this.keyboardType,
     this.textInputAction,
     this.onChanged,
+    this.onSubmitted,
+    this.validator,
+    this.autofillHints,
     super.key,
   });
 
@@ -23,20 +28,30 @@ class AppTextField extends StatelessWidget {
   final String? hint;
   final String? errorText;
   final bool obscureText;
+  final bool enabled;
+  final bool readOnly;
   final Widget? prefixIcon;
   final Widget? suffixIcon;
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
   final ValueChanged<String>? onChanged;
+  final ValueChanged<String>? onSubmitted;
+  final FormFieldValidator<String>? validator;
+  final Iterable<String>? autofillHints;
 
   @override
   Widget build(BuildContext context) {
-    final field = TextField(
+    final field = TextFormField(
       controller: controller,
       obscureText: obscureText,
+      enabled: enabled,
+      readOnly: readOnly,
       keyboardType: keyboardType,
       textInputAction: textInputAction,
       onChanged: onChanged,
+      onFieldSubmitted: onSubmitted,
+      validator: validator,
+      autofillHints: autofillHints,
       style: AppTypography.bodyMd.copyWith(
         color: Theme.of(context).colorScheme.onSurface,
       ),

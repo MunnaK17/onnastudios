@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/theme/app_typography.dart';
 
 class AppHeader extends StatelessWidget implements PreferredSizeWidget {
   const AppHeader({
@@ -10,6 +12,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
     this.onBackPressed,
     this.actionIcon,
     this.onActionPressed,
+    this.badgeCount = 0,
     super.key,
   });
 
@@ -18,6 +21,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onBackPressed;
   final IconData? actionIcon;
   final VoidCallback? onActionPressed;
+  final int badgeCount;
 
   @override
   Size get preferredSize => const Size.fromHeight(72);
@@ -51,9 +55,10 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                 alignment: Alignment.centerRight,
                 child: actionIcon == null
                     ? const SizedBox.shrink()
-                    : _HeaderIconButton(
+                    : _HeaderIconButtonWithBadge(
                         icon: actionIcon!,
                         onPressed: onActionPressed,
+                        badgeCount: badgeCount,
                       ),
               ),
             ],
@@ -82,6 +87,70 @@ class _HeaderIconButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppRadius.pill),
         ),
       ),
+    );
+  }
+}
+
+class _HeaderIconButtonWithBadge extends StatelessWidget {
+  const _HeaderIconButtonWithBadge({
+    required this.icon,
+    this.onPressed,
+    this.badgeCount = 0,
+  });
+
+  final IconData icon;
+  final VoidCallback? onPressed;
+  final int badgeCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        IconButton(
+          onPressed: onPressed,
+          icon: Icon(icon),
+          style: IconButton.styleFrom(
+            backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
+            foregroundColor: Theme.of(context).colorScheme.primary,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.pill),
+            ),
+          ),
+        ),
+        if (badgeCount > 0)
+          Positioned(
+            right: -4,
+            top: -4,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 6,
+                vertical: 2,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.error,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.surface,
+                  width: 2,
+                ),
+              ),
+              constraints: const BoxConstraints(
+                minWidth: 18,
+                minHeight: 18,
+              ),
+              child: Text(
+                badgeCount > 99 ? '99+' : badgeCount.toString(),
+                style: AppTypography.labelCaps.copyWith(
+                  color: AppColors.onError,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

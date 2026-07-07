@@ -25,7 +25,6 @@
 - home
 - classes
 - schedule
-- package
 - profile
 
 ## Task 5: Booking Flow

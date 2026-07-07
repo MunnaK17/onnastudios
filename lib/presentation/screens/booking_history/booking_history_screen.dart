@@ -16,6 +16,8 @@ import '../../providers/booking_provider.dart';
 import '../../providers/class_provider.dart';
 import '../../providers/instructor_provider.dart';
 import '../../providers/schedule_provider.dart';
+import '../../../shared/widgets/dialogs/app_confirmation_dialog.dart';
+import '../../../shared/widgets/state/app_state_widgets.dart';
 
 enum BookingFilter { all, upcoming, completed, cancelled }
 
@@ -30,23 +32,23 @@ class BookingHistoryScreen extends ConsumerStatefulWidget {
 class _BookingHistoryScreenState extends ConsumerState<BookingHistoryScreen> {
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: AppSpacing.lg),
-            // Header
-            const _HeaderSection(),
-            const SizedBox(height: AppSpacing.xl),
-            // Filter Tabs
-            const _FilterTabs(),
-            const SizedBox(height: AppSpacing.lg),
-            // Bookings List
-            const _BookingsSection(),
-            const SizedBox(height: AppSpacing.lg),
-          ],
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: AppSpacing.lg),
+              const _HeaderSection(),
+              const SizedBox(height: AppSpacing.xl),
+              const _FilterTabs(),
+              const SizedBox(height: AppSpacing.lg),
+              const _BookingsSection(),
+              const SizedBox(height: AppSpacing.lg),
+            ],
+          ),
         ),
       ),
     );
@@ -60,15 +62,36 @@ class _HeaderSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Booking History', style: AppTypography.h2),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            'Review your past sessions and upcoming reservations.',
-            style: AppTypography.bodyMd.copyWith(
-              color: AppColors.onSurfaceVariant,
+          IconButton(
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go(AppRoutes.profile);
+              }
+            },
+            icon: const Icon(Icons.arrow_back),
+            color: AppColors.onSurface,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints.tightFor(width: 40, height: 40),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Booking History', style: AppTypography.h2),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  'Review your past sessions and upcoming reservations.',
+                  style: AppTypography.bodyMd.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -202,11 +225,18 @@ class _BookingsSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bookingsAsync = ref.watch(userBookingsProvider);
+    final schedulesAsync = ref.watch(allSchedulesProvider);
     final filter = ref.watch(_filterStateProvider);
 
     return bookingsAsync.when(
       data: (bookings) {
-        final filtered = _filterBookings(bookings, filter);
+        final schedules = schedulesAsync.when(
+          data: (s) => s,
+          loading: () => <ScheduleModel>[],
+          error: (e, s) => <ScheduleModel>[],
+        );
+
+        final filtered = _filterBookings(bookings, schedules, filter);
         if (filtered.isEmpty) {
           return _EmptyBookings(filter: filter);
         }
@@ -226,20 +256,32 @@ class _BookingsSection extends ConsumerWidget {
           }).toList(),
         );
       },
-      loading: () => const _LoadingBookings(),
-      error: (e, st) => const _ErrorBookings(),
+      loading: () => const AppLoadingState(),
+      error: (e, _) => AppErrorState(
+        onRetry: () => ref.invalidate(userBookingsProvider),
+      ),
     );
   }
 
   List<BookingModel> _filterBookings(
     List<BookingModel> bookings,
+    List<ScheduleModel> schedules,
     BookingFilter filter,
   ) {
+    // Create a map of scheduleId -> schedule for quick lookup
+    final scheduleMap = {for (var s in schedules) s.id: s};
+
     return bookings.where((b) {
+      final schedule = scheduleMap[b.scheduleId];
+
       switch (filter) {
         case BookingFilter.all:
           return true;
         case BookingFilter.upcoming:
+          // Hide if schedule is expired (30 min after start time)
+          if (schedule != null && schedule.isExpired) {
+            return false;
+          }
           return b.status == BookingStatus.upcoming;
         case BookingFilter.completed:
           return b.status == BookingStatus.completed;
@@ -258,36 +300,43 @@ class _BookingCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final classAsync = ref.watch(classByIdProvider(booking.classId));
-    final scheduleAsync = ref.watch(scheduleByIdProvider(booking.scheduleId));
 
     return classAsync.when(
       data: (yogaClass) {
         if (yogaClass == null) return const SizedBox.shrink();
+        // Fetch schedule to check if expired
+        final scheduleAsync = ref.watch(scheduleByIdProvider(booking.scheduleId));
         return scheduleAsync.when(
-          data: (schedule) => _BookingCardContent(
-            booking: booking,
-            yogaClass: yogaClass,
-            schedule: schedule,
-          ),
+          data: (schedule) {
+            // If schedule is expired and booking is still upcoming, don't show card
+            if (schedule != null && schedule.isExpired && booking.status == BookingStatus.upcoming) {
+              return const SizedBox.shrink();
+            }
+            return _BookingCardContent(
+              booking: booking,
+              yogaClass: yogaClass,
+              schedule: schedule,
+            );
+          },
           loading: () => _BookingCardContent(
             booking: booking,
             yogaClass: yogaClass,
             schedule: null,
           ),
-          error: (e, st) => _BookingCardContent(
+          error: (e, _) => _BookingCardContent(
             booking: booking,
             yogaClass: yogaClass,
             schedule: null,
           ),
         );
       },
-      loading: () => const _LoadingBookingCard(),
-      error: (e, st) => const SizedBox.shrink(),
+      loading: () => const SizedBox.shrink(),
+      error: (e, _) => const SizedBox.shrink(),
     );
   }
 }
 
-class _BookingCardContent extends ConsumerWidget {
+class _BookingCardContent extends ConsumerStatefulWidget {
   const _BookingCardContent({
     required this.booking,
     required this.yogaClass,
@@ -299,7 +348,18 @@ class _BookingCardContent extends ConsumerWidget {
   final ScheduleModel? schedule;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_BookingCardContent> createState() =>
+      _BookingCardContentState();
+}
+
+class _BookingCardContentState extends ConsumerState<_BookingCardContent> {
+  bool _isCancelling = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final booking = widget.booking;
+    final yogaClass = widget.yogaClass;
+    final schedule = widget.schedule;
     final instructorAsync = ref.watch(
       instructorByIdProvider(yogaClass.instructorId),
     );
@@ -315,65 +375,49 @@ class _BookingCardContent extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Class Image and Status
           Row(
             children: [
-              // Class Image
-              ClipRRect(
-                borderRadius: BorderRadius.circular(AppRadius.md),
-                child: SizedBox(
-                  width: 56,
-                  height: 56,
-                  child: Image.network(
-                    yogaClass.imageUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: AppColors.surfaceContainerHigh,
-                        child: Icon(
-                          Icons.spa_outlined,
-                          color: AppColors.onSurfaceVariant,
-                        ),
-                      );
-                    },
-                  ),
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceContainerHigh,
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+                child: Icon(
+                  Icons.spa_outlined,
+                  color: AppColors.onSurfaceVariant,
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
-              // Class Info
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Date & Status Row
-                    Row(
-                      children: [
-                        if (schedule != null) ...[
+                    if (schedule != null) ...[
+                      Row(
+                        children: [
                           Text(
-                            _formatDate(schedule!.date),
+                            _formatDate(schedule.date),
                             style: AppTypography.labelCaps.copyWith(
                               color: AppColors.onSurfaceVariant,
                             ),
                           ),
                           const SizedBox(width: AppSpacing.xs),
-                          Text(
-                            '•',
-                            style: AppTypography.labelCaps.copyWith(
-                              color: AppColors.onSurfaceVariant,
-                            ),
-                          ),
+                          Text('•', style: AppTypography.labelCaps.copyWith(
+                            color: AppColors.onSurfaceVariant,
+                          )),
                           const SizedBox(width: AppSpacing.xs),
                           Text(
-                            schedule!.startTime,
+                            schedule.startTime,
                             style: AppTypography.labelCaps.copyWith(
                               color: AppColors.onSurfaceVariant,
                             ),
                           ),
                         ],
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.xxs),
-                    // Title
+                      ),
+                      const SizedBox(height: AppSpacing.xxs),
+                    ],
                     Text(
                       yogaClass.title,
                       style: AppTypography.bodyLg.copyWith(
@@ -385,15 +429,11 @@ class _BookingCardContent extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: AppSpacing.xxs),
-                    // Instructor
                     instructorAsync.when(
                       data: (instructor) => Row(
                         children: [
-                          Icon(
-                            Icons.person_outline,
-                            size: 14,
-                            color: AppColors.onSurfaceVariant,
-                          ),
+                          Icon(Icons.person_outline, size: 14,
+                              color: AppColors.onSurfaceVariant),
                           const SizedBox(width: AppSpacing.xxs),
                           Text(
                             instructor?.name ?? 'Unknown',
@@ -404,93 +444,135 @@ class _BookingCardContent extends ConsumerWidget {
                         ],
                       ),
                       loading: () => const SizedBox.shrink(),
-                      error: (e, st) => const SizedBox.shrink(),
+                      error: (e, _) => const SizedBox.shrink(),
                     ),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.md),
-          // Details Row
           if (schedule != null) ...[
+            const SizedBox(height: AppSpacing.md),
             Row(
               children: [
-                _DetailChip(
-                  icon: Icons.access_time,
-                  label: '${yogaClass.durationMinutes} min',
-                ),
+                _DetailChip(icon: Icons.access_time, label: '${yogaClass.durationMinutes} min'),
                 const SizedBox(width: AppSpacing.sm),
-                _DetailChip(
-                  icon: Icons.room_outlined,
-                  label: schedule!.studioRoom,
-                ),
+                _DetailChip(icon: Icons.room_outlined, label: schedule.studioRoom),
                 const SizedBox(width: AppSpacing.sm),
-                _DetailChip(
-                  icon: Icons.monetization_on_outlined,
-                  label: '${yogaClass.creditCost} credit',
-                ),
+                _DetailChip(icon: Icons.monetization_on_outlined, label: '${yogaClass.creditCost} credit'),
               ],
             ),
             const SizedBox(height: AppSpacing.md),
           ],
-          // Status and Actions Row
-          Row(
-            children: [
-              // Status Badge
-              _StatusBadge(status: booking.status),
-              const Spacer(),
-              // Actions
-              if (booking.status == BookingStatus.upcoming) ...[
-                _ActionButton(
-                  label: 'View QR',
-                  variant: _ActionVariant.outline,
-                  onTap: () => context.go(
-                    '${AppRoutes.bookingConfirmation}?bookingId=${booking.id}',
+          Row(children: [_StatusBadge(status: booking.status)]),
+          if (booking.status == BookingStatus.upcoming) ...[
+            const SizedBox(height: AppSpacing.md),
+            Row(
+              children: [
+                Expanded(
+                  child: _ActionButton(
+                    label: 'View QR',
+                    icon: Icons.qr_code_2,
+                    variant: _ActionVariant.outline,
+                    onTap: _isCancelling
+                        ? null
+                        : () => context.go(
+                            AppRoutes.bookingConfirmationPath(bookingId: booking.id),
+                          ),
                   ),
                 ),
-              ] else if (booking.status == BookingStatus.completed) ...[
-                _ActionButton(
-                  label: 'Book Again',
-                  variant: _ActionVariant.outline,
-                  onTap: () =>
-                      context.go('${AppRoutes.classDetail}/${booking.classId}'),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: _ActionButton(
+                    label: 'Reschedule',
+                    icon: Icons.swap_horiz,
+                    variant: _ActionVariant.outline,
+                    onTap: () {
+                      context.push(
+                        Uri(
+                          path: '/schedule/select/${booking.classId}',
+                          queryParameters: {'bookingId': booking.id},
+                        ).toString(),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: _ActionButton(
+                    label: 'Cancel',
+                    icon: Icons.close,
+                    variant: _ActionVariant.destructive,
+                    isLoading: _isCancelling,
+                    onTap: _isCancelling ? null : _confirmCancellation,
+                  ),
                 ),
               ],
-            ],
-          ),
+            ),
+          ] else if (booking.status == BookingStatus.completed) ...[
+            const SizedBox(height: AppSpacing.md),
+            _ActionButton(
+              label: 'Book Again',
+              icon: Icons.refresh,
+              variant: _ActionVariant.outline,
+              onTap: () => context.go(AppRoutes.classDetailPath(booking.classId)),
+            ),
+          ],
         ],
       ),
     );
+  }
+
+  Future<void> _confirmCancellation() async {
+    final confirmed = await AppConfirmationDialog.show(
+      context,
+      title: 'Cancel this booking?',
+      message: '${widget.yogaClass.creditCost} credit will be returned to your wallet.',
+      confirmLabel: 'Cancel Booking',
+      icon: Icons.event_busy_outlined,
+    );
+
+    if (!confirmed || !mounted) return;
+
+    setState(() => _isCancelling = true);
+    try {
+      await ref
+          .read(bookingNotifierProvider.notifier)
+          .cancelBooking(
+            bookingId: widget.booking.id,
+            scheduleId: widget.booking.scheduleId,
+          );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Booking cancelled. ${widget.yogaClass.creditCost} credit returned.'),
+          backgroundColor: AppColors.primary,
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isCancelling = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Unable to cancel booking. Please try again.'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
   }
 
   Color _getTitleColor(BookingStatus status) {
     switch (status) {
       case BookingStatus.cancelled:
         return AppColors.outline;
-      case BookingStatus.completed:
-        return AppColors.onSurface;
-      case BookingStatus.upcoming:
-      case BookingStatus.expired:
+      default:
         return AppColors.onSurface;
     }
   }
 
   String _formatDate(DateTime date) {
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return '${months[date.month - 1]} ${date.day}';
   }
 }
@@ -540,26 +622,11 @@ class _StatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (label, bgColor, textColor) = switch (status) {
-      BookingStatus.upcoming => (
-        'Upcoming',
-        AppColors.secondaryContainer,
-        AppColors.onSecondaryContainer,
-      ),
-      BookingStatus.completed => (
-        'Completed',
-        AppColors.surfaceVariant,
-        AppColors.onSurfaceVariant,
-      ),
-      BookingStatus.cancelled => (
-        'Canceled',
-        AppColors.errorContainer.withAlpha(128),
-        AppColors.onErrorContainer,
-      ),
-      BookingStatus.expired => (
-        'Expired',
-        AppColors.surfaceContainerHigh,
-        AppColors.onSurfaceVariant,
-      ),
+      BookingStatus.upcoming => ('Upcoming', AppColors.secondaryContainer, AppColors.onSecondaryContainer),
+      BookingStatus.completed => ('Completed', AppColors.surfaceVariant, AppColors.onSurfaceVariant),
+      BookingStatus.cancelled => ('Canceled', AppColors.errorContainer.withAlpha(128), AppColors.onErrorContainer),
+      BookingStatus.expired => ('Expired', AppColors.surfaceContainerHigh, AppColors.onSurfaceVariant),
+      BookingStatus.noShow => ('No Show', AppColors.errorContainer, AppColors.onErrorContainer),
     };
 
     return Container(
@@ -571,26 +638,27 @@ class _StatusBadge extends StatelessWidget {
         color: bgColor,
         borderRadius: BorderRadius.circular(AppRadius.pill),
       ),
-      child: Text(
-        label,
-        style: AppTypography.labelCaps.copyWith(color: textColor),
-      ),
+      child: Text(label, style: AppTypography.labelCaps.copyWith(color: textColor)),
     );
   }
 }
 
-enum _ActionVariant { primary, outline }
+enum _ActionVariant { primary, outline, destructive }
 
 class _ActionButton extends StatelessWidget {
   const _ActionButton({
     required this.label,
     required this.variant,
     required this.onTap,
+    this.icon,
+    this.isLoading = false,
   });
 
   final String label;
   final _ActionVariant variant;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
+  final IconData? icon;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -600,7 +668,7 @@ class _ActionButton extends StatelessWidget {
           : Colors.transparent,
       borderRadius: BorderRadius.circular(AppRadius.button),
       child: InkWell(
-        onTap: onTap,
+        onTap: isLoading ? null : onTap,
         borderRadius: BorderRadius.circular(AppRadius.button),
         child: Container(
           padding: const EdgeInsets.symmetric(
@@ -609,17 +677,36 @@ class _ActionButton extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadius.button),
-            border: variant == _ActionVariant.outline
-                ? Border.all(color: AppColors.outline)
-                : null,
+            border: switch (variant) {
+              _ActionVariant.outline => Border.all(color: AppColors.outline),
+              _ActionVariant.destructive => Border.all(color: AppColors.error),
+              _ActionVariant.primary => null,
+            },
           ),
-          child: Text(
-            label,
-            style: AppTypography.labelCaps.copyWith(
-              color: variant == _ActionVariant.primary
-                  ? AppColors.onPrimary
-                  : AppColors.onSurface,
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (isLoading)
+                const SizedBox.square(dimension: AppSpacing.md, child: CircularProgressIndicator(strokeWidth: 2))
+              else if (icon != null)
+                Icon(icon, size: AppSpacing.md),
+              if (isLoading || icon != null)
+                const SizedBox(width: AppSpacing.xs),
+              Flexible(
+                child: Text(
+                  label,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.labelCaps.copyWith(
+                    color: switch (variant) {
+                      _ActionVariant.primary => AppColors.onPrimary,
+                      _ActionVariant.outline => AppColors.onSurface,
+                      _ActionVariant.destructive => AppColors.error,
+                    },
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -642,143 +729,14 @@ class _EmptyBookings extends StatelessWidget {
     };
 
     final subtitle = switch (filter) {
-      BookingFilter.all =>
-        'Start exploring our classes to book your first session.',
+      BookingFilter.all => 'Start exploring our classes to book your first session.',
       _ => 'This list is currently empty.',
     };
 
-    return Padding(
-      padding: const EdgeInsets.all(AppSpacing.screenPadding),
-      child: Center(
-        child: Column(
-          children: [
-            const SizedBox(height: AppSpacing.xl),
-            Icon(
-              Icons.calendar_today_outlined,
-              size: 48,
-              color: AppColors.onSurfaceVariant.withAlpha(128),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              message,
-              style: AppTypography.bodyMd.copyWith(
-                color: AppColors.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              subtitle,
-              style: AppTypography.bodySm.copyWith(
-                color: AppColors.onSurfaceVariant.withAlpha(179),
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _LoadingBookings extends StatelessWidget {
-  const _LoadingBookings();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
-      child: Column(
-        children: List.generate(
-          3,
-          (index) => Padding(
-            padding: EdgeInsets.only(bottom: index < 2 ? AppSpacing.md : 0),
-            child: const _LoadingBookingCard(),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _LoadingBookingCard extends StatelessWidget {
-  const _LoadingBookingCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.surfaceVariant),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: AppColors.surfaceContainerHigh,
-              borderRadius: BorderRadius.circular(AppRadius.md),
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: double.infinity,
-                  height: 16,
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceContainerHigh,
-                    borderRadius: BorderRadius.circular(AppRadius.sm),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Container(
-                  width: 100,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceContainerHigh,
-                    borderRadius: BorderRadius.circular(AppRadius.sm),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ErrorBookings extends StatelessWidget {
-  const _ErrorBookings();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(AppSpacing.screenPadding),
-      child: Center(
-        child: Column(
-          children: [
-            const SizedBox(height: AppSpacing.lg),
-            Icon(
-              Icons.error_outline,
-              size: 48,
-              color: AppColors.error.withAlpha(128),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              'Unable to load bookings',
-              style: AppTypography.bodyMd.copyWith(
-                color: AppColors.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
-      ),
+    return AppEmptyState(
+      icon: Icons.calendar_today_outlined,
+      title: message,
+      subtitle: subtitle,
     );
   }
 }

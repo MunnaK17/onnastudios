@@ -1,4 +1,5 @@
 import '../../models/notification_item_model.dart';
+import '../../models/app_enums.dart';
 
 /// Repository interface for notification operations.
 abstract class NotificationRepository {
@@ -10,6 +11,13 @@ abstract class NotificationRepository {
 
   /// Get unread count.
   Future<int> getUnreadCount();
+
+  /// Create a new notification.
+  Future<NotificationItemModel> createNotification({
+    required String title,
+    required String message,
+    required NotificationType type,
+  });
 
   /// Mark a notification as read.
   Future<void> markAsRead(String notificationId);

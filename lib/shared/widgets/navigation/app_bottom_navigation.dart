@@ -22,7 +22,10 @@ class AppBottomNavigation extends StatelessWidget {
       icon: Icons.calendar_today_outlined,
       label: 'Schedule',
     ),
-    AppBottomNavigationItem(icon: Icons.payments_outlined, label: 'Package'),
+    AppBottomNavigationItem(
+      icon: Icons.mood_outlined,
+      label: 'Mood',
+    ),
     AppBottomNavigationItem(icon: Icons.person_outline, label: 'Profile'),
   ];
 

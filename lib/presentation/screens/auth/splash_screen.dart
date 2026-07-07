@@ -48,14 +48,21 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 
   Future<void> _navigateAfterDelay() async {
-    await Future.delayed(const Duration(milliseconds: 2500));
+    // Run simultaneously: wait minimum splash time and check Supabase session.
+    final results = await Future.wait([
+      Future.delayed(const Duration(milliseconds: 2500)),
+      ref.read(isLoggedInProvider.future),
+    ]);
+
     if (!mounted) return;
 
-    final isLoggedIn = ref.read(authNotifierProvider);
+    final isLoggedIn = results[1] as bool;
     if (isLoggedIn) {
-      context.go(AppRoutes.home);
+      context.go(AppRoutes.home); // ignore: use_build_context_synchronously
     } else {
-      context.go(AppRoutes.onboarding);
+      context.go(
+        AppRoutes.onboarding,
+      ); // ignore: use_build_context_synchronously
     }
   }
 

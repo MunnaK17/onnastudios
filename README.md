@@ -37,3 +37,29 @@ The app follows a calm, elegant, breathable wellness design system inspired by p
 ```bash
 flutter pub get
 flutter run
+```
+
+## Supabase Configuration
+
+Auth uses Supabase, so the app must be run with these Dart defines:
+
+```bash
+flutter run \
+  --dart-define=SUPABASE_URL=https://your-project.supabase.co \
+  --dart-define=SUPABASE_ANON_KEY=your-anon-key
+```
+
+Or create a local, ignored `supabase.env.json` file:
+
+```json
+{
+  "SUPABASE_URL": "https://your-project.supabase.co",
+  "SUPABASE_ANON_KEY": "your-anon-key"
+}
+```
+
+Then run:
+
+```bash
+flutter run --dart-define-from-file=supabase.env.json
+```

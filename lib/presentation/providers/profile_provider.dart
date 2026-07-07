@@ -2,11 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models/user_model.dart';
 import '../../data/repositories/interfaces/profile_repository.dart';
-import '../../data/repositories/implementations/mock_profile_repository.dart';
+import '../../data/repositories/implementations/supabase_profile_repository.dart';
 
 /// Provider for ProfileRepository instance.
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
-  return MockProfileRepository();
+  return SupabaseProfileRepository();
 });
 
 /// Provider for current user profile.
@@ -18,7 +18,10 @@ final userProfileProvider = FutureProvider<UserModel?>((ref) async {
 /// Profile state notifier using Riverpod 3.x Notifier.
 class ProfileNotifier extends Notifier<AsyncValue<UserModel?>> {
   @override
-  AsyncValue<UserModel?> build() => const AsyncValue.loading();
+  AsyncValue<UserModel?> build() {
+    Future.microtask(loadProfile);
+    return const AsyncValue.loading();
+  }
 
   Future<void> loadProfile() async {
     state = const AsyncValue.loading();

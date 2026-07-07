@@ -9,18 +9,28 @@ class AppSearchField extends StatelessWidget {
     this.controller,
     this.hint = 'Search',
     this.onChanged,
+    this.onSubmitted,
+    this.onClear,
+    this.enabled = true,
     super.key,
   });
 
   final TextEditingController? controller;
   final String hint;
   final ValueChanged<String>? onChanged;
+  final ValueChanged<String>? onSubmitted;
+  final VoidCallback? onClear;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
+    final canClear = onClear != null;
+
     return TextField(
       controller: controller,
+      enabled: enabled,
       onChanged: onChanged,
+      onSubmitted: onSubmitted,
       textInputAction: TextInputAction.search,
       style: AppTypography.bodyMd.copyWith(
         color: Theme.of(context).colorScheme.onSurface,
@@ -31,6 +41,13 @@ class AppSearchField extends StatelessWidget {
           Icons.search,
           color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
+        suffixIcon: canClear
+            ? IconButton(
+                onPressed: onClear,
+                icon: const Icon(Icons.close),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              )
+            : null,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.inputHorizontal,
           vertical: AppSpacing.inputVertical,

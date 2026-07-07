@@ -8,14 +8,16 @@ import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_shadows.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../core/theme/app_theme.dart';
 import '../../../data/models/app_enums.dart';
 import '../../../data/models/yoga_class_model.dart';
 import '../../providers/class_provider.dart';
 import '../../providers/instructor_provider.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/chips/app_chip.dart';
+import '../../../shared/widgets/images/optimized_image.dart';
 import '../../../shared/widgets/inputs/app_search_field.dart';
 import '../../../shared/widgets/layout/app_scaffold.dart';
+import '../../../shared/widgets/state/app_state_widgets.dart';
 
 class ClassesScreen extends ConsumerStatefulWidget {
   const ClassesScreen({super.key});
@@ -49,12 +51,10 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
 
   List<YogaClassModel> _filterClasses(List<YogaClassModel> classes) {
     return classes.where((yogaClass) {
-      // Filter by category
       if (_selectedCategory != null &&
           yogaClass.category != _selectedCategory) {
         return false;
       }
-      // Filter by search query
       if (_searchQuery.isNotEmpty) {
         final titleMatch = yogaClass.title.toLowerCase().contains(_searchQuery);
         final categoryMatch = yogaClass.category.name.toLowerCase().contains(
@@ -80,7 +80,6 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Search and filters
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.screenPadding,
@@ -88,14 +87,12 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
               child: Column(
                 children: [
                   const SizedBox(height: AppSpacing.md),
-                  // Search field
                   AppSearchField(
                     controller: _searchController,
                     hint: 'Search classes...',
                     onChanged: _onSearchChanged,
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  // Category filter chips
                   _CategoryFilterChips(
                     selectedCategory: _selectedCategory,
                     onCategorySelected: _onCategorySelected,
@@ -104,18 +101,31 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
                 ],
               ),
             ),
-            // Class list
             Expanded(
               child: classesAsync.when(
                 data: (classes) {
                   final filteredClasses = _filterClasses(classes);
                   if (filteredClasses.isEmpty) {
-                    return const _EmptyState();
+                    return AppEmptyState(
+                      icon: Icons.search_off,
+                      title: 'No class matches your search',
+                      subtitle: 'Try adjusting your filter',
+                      action: () {
+                        setState(() {
+                          _searchQuery = '';
+                          _selectedCategory = null;
+                          _searchController.clear();
+                        });
+                      },
+                      actionLabel: 'Clear Filters',
+                    );
                   }
                   return _ClassList(classes: filteredClasses);
                 },
-                loading: () => const _LoadingState(),
-                error: (error, _) => const _ErrorState(),
+                loading: () => const AppLoadingState(),
+                error: (e, st) => AppErrorState(
+                  onRetry: () => ref.invalidate(allClassesProvider),
+                ),
               ),
             ),
           ],
@@ -195,7 +205,10 @@ class _ClassList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.screenPadding,
+        vertical: AppSpacing.sm,
+      ),
       itemCount: classes.length,
       itemBuilder: (context, index) {
         final yogaClass = classes[index];
@@ -222,7 +235,7 @@ class _ClassCardItem extends ConsumerWidget {
     );
 
     return GestureDetector(
-      onTap: () => context.push('${AppRoutes.classDetail}/${classModel.id}'),
+      onTap: () => context.push(AppRoutes.classDetailPath(classModel.id)),
       child: Container(
         decoration: BoxDecoration(
           color: Theme.of(context).extension<OnnaThemeTokens>()!.cardSurface,
@@ -233,40 +246,39 @@ class _ClassCardItem extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Class image placeholder
-            Container(
+            // Class image
+            SizedBox(
               height: 160,
               width: double.infinity,
-              decoration: BoxDecoration(
-                color: AppColors.surfaceContainerHigh,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(AppRadius.card),
-                ),
-              ),
               child: Stack(
                 children: [
-                  // Placeholder gradient
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          AppColors.primaryContainer.withAlpha(77),
-                          AppColors.secondaryContainer.withAlpha(77),
-                        ],
+                  Positioned.fill(
+                    child: OptimizedImage(
+                      imageUrl: classModel.imageUrl,
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(AppRadius.card),
+                      ),
+                      errorPlaceholder: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              AppColors.primaryContainer.withAlpha(77),
+                              AppColors.secondaryContainer.withAlpha(77),
+                            ],
+                          ),
+                        ),
+                        child: Center(
+                          child: Icon(
+                            Icons.self_improvement,
+                            size: 56,
+                            color: AppColors.onSurfaceVariant.withAlpha(128),
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                  // Class icon
-                  Center(
-                    child: Icon(
-                      Icons.self_improvement,
-                      size: 56,
-                      color: AppColors.onSurfaceVariant.withAlpha(128),
-                    ),
-                  ),
-                  // Mood indicator (intensity)
                   Positioned(
                     top: AppSpacing.sm,
                     right: AppSpacing.sm,
@@ -276,14 +288,14 @@ class _ClassCardItem extends ConsumerWidget {
                       decoration: BoxDecoration(
                         color: _getIntensityColor(classModel.intensity),
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 1.5),
-                        boxShadow: const [
-                          BoxShadow(color: Color(0x29000000), blurRadius: 4),
-                        ],
+                        border: Border.all(
+                          color: AppColors.surfaceContainerLowest,
+                          width: 1.5,
+                        ),
+                        boxShadow: AppShadows.subtle,
                       ),
                     ),
                   ),
-                  // Credit cost badge
                   Positioned(
                     bottom: AppSpacing.sm,
                     right: AppSpacing.sm,
@@ -307,13 +319,11 @@ class _ClassCardItem extends ConsumerWidget {
                 ],
               ),
             ),
-            // Content
             Padding(
               padding: const EdgeInsets.all(AppSpacing.lg),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Title
                   Text(
                     classModel.title,
                     style: AppTypography.h3,
@@ -321,7 +331,6 @@ class _ClassCardItem extends ConsumerWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: AppSpacing.xs),
-                  // Category
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.sm,
@@ -339,22 +348,13 @@ class _ClassCardItem extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  // Instructor
                   instructorAsync.when(
                     data: (instructor) => Row(
                       children: [
-                        Container(
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceContainerHigh,
-                            borderRadius: BorderRadius.circular(AppRadius.pill),
-                          ),
-                          child: Icon(
-                            Icons.person,
-                            size: 18,
-                            color: AppColors.onSurfaceVariant.withAlpha(128),
-                          ),
+                        OptimizedAvatar(
+                          imageUrl: instructor?.photoUrl ?? '',
+                          name: instructor?.name,
+                          size: 32,
                         ),
                         const SizedBox(width: AppSpacing.sm),
                         Expanded(
@@ -367,28 +367,8 @@ class _ClassCardItem extends ConsumerWidget {
                         ),
                       ],
                     ),
-                    loading: () => Row(
-                      children: [
-                        Container(
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceContainerHigh,
-                            borderRadius: BorderRadius.circular(AppRadius.pill),
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        Container(
-                          width: 80,
-                          height: 16,
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceContainerHigh,
-                            borderRadius: BorderRadius.circular(AppRadius.sm),
-                          ),
-                        ),
-                      ],
-                    ),
-                    error: (_, _) => Row(
+                    loading: () => const _LoadingInstructorRow(),
+                    error: (e, _) => Row(
                       children: [
                         Container(
                           width: 32,
@@ -404,7 +384,6 @@ class _ClassCardItem extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  // Duration and intensity row
                   Row(
                     children: [
                       _InfoChip(
@@ -467,6 +446,35 @@ class _ClassCardItem extends ConsumerWidget {
   }
 }
 
+class _LoadingInstructorRow extends StatelessWidget {
+  const _LoadingInstructorRow();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: AppColors.surfaceContainerHigh,
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        Container(
+          width: 80,
+          height: 16,
+          decoration: BoxDecoration(
+            color: AppColors.surfaceContainerHigh,
+            borderRadius: BorderRadius.circular(AppRadius.sm),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _InfoChip extends StatelessWidget {
   const _InfoChip({required this.icon, required this.label});
 
@@ -496,200 +504,6 @@ class _InfoChip extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _EmptyState extends StatelessWidget {
-  const _EmptyState();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.screenPadding),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.search_off,
-              size: 64,
-              color: AppColors.onSurfaceVariant.withAlpha(128),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Text(
-              'No class matches your search',
-              style: AppTypography.h3,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              'Try adjusting your filter',
-              style: AppTypography.bodyMd.copyWith(
-                color: AppColors.onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _LoadingState extends StatelessWidget {
-  const _LoadingState();
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
-      itemCount: 3,
-      itemBuilder: (context, index) => Padding(
-        padding: EdgeInsets.only(
-          bottom: index < 2 ? AppSpacing.md : AppSpacing.lg,
-        ),
-        child: const _LoadingClassCard(),
-      ),
-    );
-  }
-}
-
-class _LoadingClassCard extends StatelessWidget {
-  const _LoadingClassCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).extension<OnnaThemeTokens>()!.cardSurface,
-        borderRadius: BorderRadius.circular(AppRadius.card),
-        border: Border.all(color: AppColors.surfaceVariant),
-        boxShadow: AppShadows.ambient,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Image placeholder
-          Container(
-            height: 160,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: AppColors.surfaceContainerHigh,
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(AppRadius.card),
-              ),
-            ),
-          ),
-          // Content placeholder
-          Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 160,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceContainerHigh,
-                    borderRadius: BorderRadius.circular(AppRadius.sm),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Container(
-                  width: 80,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceContainerHigh,
-                    borderRadius: BorderRadius.circular(AppRadius.pill),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Row(
-                  children: [
-                    Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceContainerHigh,
-                        borderRadius: BorderRadius.circular(AppRadius.pill),
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Container(
-                      width: 100,
-                      height: 16,
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceContainerHigh,
-                        borderRadius: BorderRadius.circular(AppRadius.sm),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Row(
-                  children: [
-                    Container(
-                      width: 70,
-                      height: 24,
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceContainerHigh,
-                        borderRadius: BorderRadius.circular(AppRadius.pill),
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Container(
-                      width: 70,
-                      height: 24,
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceContainerHigh,
-                        borderRadius: BorderRadius.circular(AppRadius.pill),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ErrorState extends StatelessWidget {
-  const _ErrorState();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.screenPadding),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: AppColors.onSurfaceVariant.withAlpha(128),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Text(
-              'We could not connect right now',
-              style: AppTypography.h3,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              'Please check your connection and try again',
-              style: AppTypography.bodyMd.copyWith(
-                color: AppColors.onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
       ),
     );
   }

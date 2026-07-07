@@ -201,7 +201,7 @@ class _FeatureList extends StatelessWidget {
         const _FeatureItem(
           icon: Icons.monetization_on_outlined,
           title: 'Credit-Based System',
-          description: 'Pay as you go with our credit packages',
+          description: 'Book classes using your studio credits',
         ),
       ],
     );

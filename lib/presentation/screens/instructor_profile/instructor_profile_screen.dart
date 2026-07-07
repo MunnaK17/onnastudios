@@ -12,6 +12,8 @@ import '../../../data/models/app_enums.dart';
 import '../../../data/models/yoga_class_model.dart';
 import '../../providers/class_provider.dart';
 import '../../providers/instructor_provider.dart';
+import '../../../shared/widgets/state/app_state_widgets.dart';
+import '../../../shared/widgets/images/optimized_image.dart';
 
 class InstructorProfileScreen extends ConsumerWidget {
   const InstructorProfileScreen({required this.instructorId, super.key});
@@ -30,7 +32,9 @@ class InstructorProfileScreen extends ConsumerWidget {
         return _InstructorProfileContent(instructor: instructor);
       },
       loading: () => const _LoadingScreen(),
-      error: (_, _) => const _NotFoundScreen(),
+      error: (e, _) => _NotFoundScreen(
+        onRetry: () => ref.invalidate(instructorByIdProvider(instructorId)),
+      ),
     );
   }
 }
@@ -42,16 +46,12 @@ class _InstructorProfileContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final classesAsync = ref.watch(
-      classesByInstructorIdProvider(instructor.id),
-    );
+    final classesAsync = ref.watch(classesByInstructorIdProvider(instructor.id));
 
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          // Header with avatar and info
           _InstructorHeader(instructor: instructor),
-          // Bio section
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(
@@ -64,16 +64,15 @@ class _InstructorProfileContent extends ConsumerWidget {
                   Text('About', style: AppTypography.h3),
                   const SizedBox(height: AppSpacing.md),
                   Text(
-                    instructor.bio,
+                    instructor.bio ?? '',
                     style: AppTypography.bodyLg.copyWith(
                       color: AppColors.onSurfaceVariant,
                       height: 1.7,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xl),
-                  // Classes section
                   Text(
-                    'Classes by ${instructor.name}',
+                    'Classes by ${instructor.name ?? 'Instructor'}',
                     style: AppTypography.h3,
                   ),
                   const SizedBox(height: AppSpacing.md),
@@ -81,11 +80,16 @@ class _InstructorProfileContent extends ConsumerWidget {
               ),
             ),
           ),
-          // Classes list
           classesAsync.when(
             data: (classes) {
               if (classes.isEmpty) {
-                return const SliverToBoxAdapter(child: _EmptyClasses());
+                return const SliverToBoxAdapter(
+                  child: AppEmptyState(
+                    icon: Icons.school_outlined,
+                    title: 'No classes available',
+                    subtitle: 'Check back later for new classes',
+                  ),
+                );
               }
               return SliverPadding(
                 padding: const EdgeInsets.symmetric(
@@ -106,8 +110,12 @@ class _InstructorProfileContent extends ConsumerWidget {
                 ),
               );
             },
-            loading: () => const SliverToBoxAdapter(child: _LoadingClasses()),
-            error: (_, _) => const SliverToBoxAdapter(child: _ErrorClasses()),
+            loading: () => const SliverToBoxAdapter(child: AppLoadingState()),
+            error: (e, _) => SliverToBoxAdapter(
+              child: AppErrorState(
+                onRetry: () => ref.invalidate(classesByInstructorIdProvider(instructor.id)),
+              ),
+            ),
           ),
         ],
       ),
@@ -156,7 +164,6 @@ class _InstructorHeader extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const SizedBox(height: 40),
-                // Avatar
                 Container(
                   width: 120,
                   height: 120,
@@ -170,28 +177,26 @@ class _InstructorHeader extends StatelessWidget {
                     ),
                   ),
                   child: ClipOval(
-                    child: Image.network(
-                      instructor.photoUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Icon(
-                          Icons.person,
-                          size: 60,
-                          color: AppColors.onSurfaceVariant.withAlpha(128),
-                        );
-                      },
-                    ),
+                    child: instructor.photoUrl != null && instructor.photoUrl.isNotEmpty
+                        ? Image.network(
+                            instructor.photoUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(Icons.person, size: 60,
+                                  color: AppColors.onSurfaceVariant);
+                            },
+                          )
+                        : Icon(Icons.person, size: 60,
+                            color: AppColors.onSurfaceVariant),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                // Name
                 Text(
-                  instructor.name,
+                  instructor.name ?? 'Instructor',
                   style: AppTypography.h2,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppSpacing.xs),
-                // Specialty badge
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.md,
@@ -202,7 +207,7 @@ class _InstructorHeader extends StatelessWidget {
                     borderRadius: BorderRadius.circular(AppRadius.pill),
                   ),
                   child: Text(
-                    instructor.specialty,
+                    instructor.specialty ?? '',
                     style: AppTypography.labelCaps.copyWith(
                       color: AppColors.onSecondaryContainer,
                     ),
@@ -228,7 +233,7 @@ class _InstructorClassCard extends StatelessWidget {
       color: AppColors.surfaceContainerLowest,
       borderRadius: BorderRadius.circular(AppRadius.lg),
       child: InkWell(
-        onTap: () => context.push('${AppRoutes.classDetail}/${yogaClass.id}'),
+        onTap: () => context.push(AppRoutes.classDetailPath(yogaClass.id)),
         borderRadius: BorderRadius.circular(AppRadius.lg),
         child: Container(
           padding: const EdgeInsets.all(AppSpacing.md),
@@ -239,35 +244,26 @@ class _InstructorClassCard extends StatelessWidget {
           ),
           child: Row(
             children: [
-              // Class image
-              ClipRRect(
-                borderRadius: BorderRadius.circular(AppRadius.md),
-                child: SizedBox(
-                  width: 72,
-                  height: 72,
-                  child: Image.network(
-                    yogaClass.imageUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: AppColors.surfaceContainerHigh,
-                        child: Icon(
-                          Icons.spa_outlined,
-                          color: AppColors.onSurfaceVariant,
-                          size: 32,
-                        ),
-                      );
-                    },
+              SizedBox(
+                width: 72,
+                height: 72,
+                child: OptimizedImage(
+                  imageUrl: yogaClass.imageUrl,
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  errorPlaceholder: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceContainerHigh,
+                      borderRadius: BorderRadius.circular(AppRadius.md),
+                    ),
+                    child: Icon(Icons.spa_outlined, color: AppColors.onSurfaceVariant, size: 32),
                   ),
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
-              // Class info
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Category badge
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: AppSpacing.xs,
@@ -286,50 +282,33 @@ class _InstructorClassCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: AppSpacing.xs),
-                    // Title
                     Text(
                       yogaClass.title,
-                      style: AppTypography.bodyMd.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: AppTypography.bodyMd.copyWith(fontWeight: FontWeight.w600),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: AppSpacing.xxs),
-                    // Info row
                     Row(
                       children: [
-                        Icon(
-                          Icons.schedule,
-                          size: 14,
-                          color: AppColors.onSurfaceVariant,
-                        ),
+                        Icon(Icons.schedule, size: 14, color: AppColors.onSurfaceVariant),
                         const SizedBox(width: 4),
                         Text(
                           '${yogaClass.durationMinutes} min',
-                          style: AppTypography.bodySm.copyWith(
-                            color: AppColors.onSurfaceVariant,
-                          ),
+                          style: AppTypography.bodySm.copyWith(color: AppColors.onSurfaceVariant),
                         ),
                         const SizedBox(width: AppSpacing.md),
-                        Icon(
-                          Icons.monetization_on_outlined,
-                          size: 14,
-                          color: AppColors.onSurfaceVariant,
-                        ),
+                        Icon(Icons.monetization_on_outlined, size: 14, color: AppColors.onSurfaceVariant),
                         const SizedBox(width: 4),
                         Text(
                           '${yogaClass.creditCost} credits',
-                          style: AppTypography.bodySm.copyWith(
-                            color: AppColors.onSurfaceVariant,
-                          ),
+                          style: AppTypography.bodySm.copyWith(color: AppColors.onSurfaceVariant),
                         ),
                       ],
                     ),
                   ],
                 ),
               ),
-              // Arrow
               Icon(Icons.chevron_right, color: AppColors.onSurfaceVariant),
             ],
           ),
@@ -347,139 +326,6 @@ class _InstructorClassCard extends StatelessWidget {
       ClassCategory.strength => 'Strength',
       ClassCategory.restorative => 'Restorative',
     };
-  }
-}
-
-class _EmptyClasses extends StatelessWidget {
-  const _EmptyClasses();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      child: Center(
-        child: Column(
-          children: [
-            Icon(
-              Icons.school_outlined,
-              size: 48,
-              color: AppColors.onSurfaceVariant.withAlpha(128),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              'No classes available',
-              style: AppTypography.bodyMd.copyWith(
-                color: AppColors.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _LoadingClasses extends StatelessWidget {
-  const _LoadingClasses();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
-      child: Column(
-        children: List.generate(
-          3,
-          (index) => Padding(
-            padding: EdgeInsets.only(
-              bottom: index < 2 ? AppSpacing.md : AppSpacing.xxl,
-            ),
-            child: Container(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceContainerLowest,
-                borderRadius: BorderRadius.circular(AppRadius.lg),
-                border: Border.all(color: AppColors.surfaceVariant),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 72,
-                    height: 72,
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceContainerHigh,
-                      borderRadius: BorderRadius.circular(AppRadius.md),
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: 60,
-                          height: 14,
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceContainerHigh,
-                            borderRadius: BorderRadius.circular(AppRadius.sm),
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                        Container(
-                          width: 150,
-                          height: 18,
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceContainerHigh,
-                            borderRadius: BorderRadius.circular(AppRadius.sm),
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                        Container(
-                          width: 100,
-                          height: 14,
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceContainerHigh,
-                            borderRadius: BorderRadius.circular(AppRadius.sm),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ErrorClasses extends StatelessWidget {
-  const _ErrorClasses();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      child: Center(
-        child: Column(
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 48,
-              color: AppColors.error.withAlpha(128),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              'Unable to load classes',
-              style: AppTypography.bodyMd.copyWith(
-                color: AppColors.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
 
@@ -551,34 +397,7 @@ class _LoadingScreen extends StatelessWidget {
               ),
             ),
           ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.screenPadding),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: AppSpacing.xl),
-                  Container(
-                    width: 80,
-                    height: 24,
-                    color: AppColors.surfaceContainerHigh,
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  Container(
-                    width: double.infinity,
-                    height: 80,
-                    color: AppColors.surfaceContainerHigh,
-                  ),
-                  const SizedBox(height: AppSpacing.xl),
-                  Container(
-                    width: 150,
-                    height: 24,
-                    color: AppColors.surfaceContainerHigh,
-                  ),
-                ],
-              ),
-            ),
-          ),
+          const SliverToBoxAdapter(child: AppLoadingState()),
         ],
       ),
     );
@@ -586,7 +405,9 @@ class _LoadingScreen extends StatelessWidget {
 }
 
 class _NotFoundScreen extends StatelessWidget {
-  const _NotFoundScreen();
+  const _NotFoundScreen({this.onRetry});
+
+  final VoidCallback? onRetry;
 
   @override
   Widget build(BuildContext context) {
@@ -598,39 +419,10 @@ class _NotFoundScreen extends StatelessWidget {
         ),
         title: const Text('Instructor Not Found'),
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.screenPadding),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.person_search,
-                size: 64,
-                color: AppColors.onSurfaceVariant.withAlpha(128),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              Text(
-                'Instructor Not Found',
-                style: AppTypography.h3,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                'This instructor may no longer be available',
-                style: AppTypography.bodyMd.copyWith(
-                  color: AppColors.onSurfaceVariant,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              TextButton(
-                onPressed: () => context.go(AppRoutes.home),
-                child: const Text('Go Home'),
-              ),
-            ],
-          ),
-        ),
+      body: AppErrorState(
+        title: 'Instructor Not Found',
+        subtitle: 'This instructor may no longer be available',
+        onRetry: onRetry,
       ),
     );
   }

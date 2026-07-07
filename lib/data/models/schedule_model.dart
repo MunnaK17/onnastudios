@@ -48,4 +48,47 @@ class ScheduleModel {
       'studioRoom': studioRoom,
     };
   }
+
+  /// Check if this schedule's date has passed (based on date only, not time).
+  bool get isPast {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final scheduleDate = DateTime(date.year, date.month, date.day);
+    return scheduleDate.isBefore(today);
+  }
+
+  /// Check if this schedule is today.
+  bool get isToday {
+    final now = DateTime.now();
+    return date.year == now.year &&
+        date.month == now.month &&
+        date.day == now.day;
+  }
+
+  /// Get the full DateTime of when this schedule starts.
+  DateTime get startDateTime {
+    final timeParts = startTime.split(':');
+    return DateTime(
+      date.year,
+      date.month,
+      date.day,
+      int.parse(timeParts[0]),
+      int.parse(timeParts[1]),
+    );
+  }
+
+  /// Check if this schedule has expired (30 minutes after start time).
+  bool get isExpired {
+    final now = DateTime.now();
+    final expirationTime = startDateTime.add(const Duration(minutes: 30));
+    return now.isAfter(expirationTime);
+  }
+
+  /// Check if this schedule is currently available for booking/check-in.
+  /// Available if: not past AND not expired (within 30 min of start time).
+  bool get isBookable {
+    if (isPast) return false;
+    if (isExpired) return false;
+    return true;
+  }
 }
